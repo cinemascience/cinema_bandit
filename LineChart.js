@@ -1,5 +1,7 @@
 function LineChart(parent, getData) {
+	var self = this;
 	this.parent = parent;
+    this.highlighted = [];
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
 	canvas = parent.append("canvas")
 		.attr("width", 800)
@@ -15,6 +17,15 @@ function LineChart(parent, getData) {
 	this.level0.fillStyle = "white";//"#9ea7b8";
 	this.level0.translate(this.margin.left, this.margin.top);
     this.level0.fillRect(0,0,this.internalWidth,this.internalHeight);
+    canvas = parent.append("canvas")
+		.attr("width", this.canvasRect.width)
+		.attr("height", this.canvasRect.width)
+		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;visibility: hidden;");
+	this.idContext = canvas.node().getContext("2d");
+	this.idContext.fillStyle = "white";
+	this.idContext.translate(this.margin.left, this.margin.top);
+	this.idContext.lineWidth=3;
+    this.idContext.clearRect(0, 0, this.internalWidth,this.internalHeight);
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
@@ -25,14 +36,14 @@ function LineChart(parent, getData) {
 	this.level1.globalCompositeOperation = "difference";
 	this.level1.translate(this.margin.left, this.margin.top);
     this.level1.clearRect(0, 0, this.internalWidth,this.internalHeight);
-	//this.level1.globalCompositeOperation = "lighter";
-	//this.level1.globalAlpha = 0.9;
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
-		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;");
+		.attr("style", "z-index: 3;position:absolute;left:0px;top:0px;");
 	this.level2 = canvas.node().getContext("2d");
 	this.level2.fillStyle = "white";
+	this.level2.lineWidth=1;
+	this.level2.imageSmoothingEnabled= false;
 	this.level2.globalAlpha = 0.4;
 	this.level2.globalCompositeOperation = "difference";
 	this.level2.translate(this.margin.left, this.margin.top);
@@ -40,7 +51,54 @@ function LineChart(parent, getData) {
     canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
-		.attr("style", "z-index: 3;position:absolute;left:0px;top:0px;");
+		.attr("style", "z-index: 4;position:absolute;left:0px;top:0px;");
+
+	d3.select(canvas.node()).on("mousemove", function() {
+    	//console.log('' + d3.event.offsetX + ',' + d3.event.offsetY);
+    	var imageData = self.idContext.getImageData(d3.event.offsetX-1, d3.event.offsetY-1, 3, 3).data;
+    	var x = d3.event.offsetX;
+    	var y = d3.event.offsetY;
+    	var vals = []
+    	for (f = 0; f < imageData.length/4; f++) {
+    		vals.push(imageData[f*4]);
+    	}
+    	vals.sort();
+    	//console.log(vals);
+
+    	var val = -1;
+    	var freq = 0;
+    	for (f = 0; f < vals.length; f++) {
+    		if (freq == 4) {
+    			break;
+    		}
+
+    		if (val != vals[f]) {
+    			val = vals[f];
+    			freq = 0;
+    		}
+
+    		freq = freq + 1;
+    	}
+
+    	var found = false;
+    	for (f = 0; f < self.highlighted.length; f++) {
+    		if (self.highlighted[f].id == (val-1)) {
+    			found = true;
+    			break;
+    		}
+    	}
+
+
+    	//console.log('' + val);
+    	if (found && freq >= 4 && val > 0) {
+    		//console.log('select');
+    		self.selectData([val-1]);
+    	}
+    	else {
+    		self.selectData([]);
+    	}
+      });
+
 	this.level3 = canvas.node().getContext("2d");
 	this.level3.fillStyle = "white";
 	this.level3.translate(this.margin.left, this.margin.top);
@@ -52,10 +110,11 @@ function LineChart(parent, getData) {
     this.xh = d3.scale.linear().range([0, this.internalWidth]);
     this.yh = d3.scale.linear().range([this.internalHeight, 0]);
     this.fullDsList = [];
-    this.highlighted = [];
     this.loadedData = {};
     // all = 0; highlighted = 1;
     this.drawMode = 0;
+
+
 }
 
 LineChart.prototype.loadData = function(query) {
@@ -96,8 +155,8 @@ LineChart.prototype.loadData = function(query) {
 					    });
 			    	}
 
-				    dsList.push({dataSet: dataSet, rows: rows2});
-				    self.fullDsList.push({dataSet: dataSet, rows: rows2});
+				    dsList.push({dataSet: dataSet, rows: rows2, id: id});
+				    self.fullDsList.push({dataSet: dataSet, rows: rows2, id: id});
 
 				    extentX.push.apply(extentX, d3.extent(rows2, function(d) { return d.x; }));
 				    extentY.push.apply(extentY, d3.extent(rows2, function(d) { return d.y; }));
@@ -118,7 +177,9 @@ LineChart.prototype.loadData = function(query) {
 					self.yh.domain(d3.extent(extentY, function(d) { return d; }));
 
 					self.drawLines(self.level1, self.fullDsList, "lightgrey");
+					self.drawLines(self.idContext, self.fullDsList, "id");
 					self.drawLines(self.level2, self.fullDsList, "green");
+					self.highlighted = self.fullDsList;
 					self.xAxis();
 					self.yAxis();
 				}
@@ -144,7 +205,12 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 	var self = this;
 	dsList.forEach(function(item, index) {
 		if (color) {
-			context.strokeStyle = color;
+			if (color == 'id') {
+				context.strokeStyle = 'rgb('+(item.id+1)+',0,0)';//color;
+			}
+			else {
+				context.strokeStyle = color;
+			}
 		}
 		else {
 			context.strokeStyle = item.dataSet.color;
@@ -186,6 +252,7 @@ LineChart.prototype.highlightData = function(query, color) {
 	self.yh.domain(d3.extent(extentY, function(d) { return d; }));
 
 	this.drawLines(self.level2, dsList, color);
+	//this.drawLines(self.idContext, dsList, 'id');
 	this.highlighted = dsList;
 }
 
