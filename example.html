@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<meta charset="utf-8">
+	<meta name='author' content="Cameron Tauxe">
+	<link rel='stylesheet' href='example.css'>
+	<script src="d3.v3.min.js"></script>
+	<script src = 'ParallelCoordinatesChart.js'></script>
+	<script src = 'LineChart.js'></script>
+</head>
+<body>
+	<div id="header">
+		<h1>Cinema Database Explorer</h1>
+	</div>
+	<div id="svgArea">
+		<div id="svgContainer"></div>
+	</div>
+	<div id="resultsArea" style="margin-left: auto; margin-right: auto;">
+		<!--canvas width="600" height="500" id="diffCanvas"></canvas-->
+		<div style="float: left;"><div id="visar"></div></div>
+		<div style="float: left;"><div id="diffraction1D"></div></div>
+		<div id="selectionReadout"></div>
+		<div id="mouseOverReadout"></div>
+	</div>
+
+	<script>
+		var loaded = false;
+		var chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
+												'GF-HP/GF-HP.csv',
+												//'GF-LP/GF-LP.csv',
+												//'LANLHigh-O/LANLHigh-O.csv',
+												//'LANLLow-O/LANLLow-O.csv',
+												//'LANLMed-O/LANLMed-O.csv',
+												doneLoading,
+												onSelectionChange,
+												onMouseOverChange);
+		var diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData);
+		var visarChart = new LineChart(d3.select('#visar'), getVisarData);
+
+		function doneLoading() {
+			loaded = true;
+
+			// Initialize lines
+			var resultIndices = Array.apply(null, Array(chart.results.length)).map(function (_, i) {return i;});
+			//diffractionChart.drawData(resultIndices, true, "lightgrey");
+			diffractionChart.loadData(resultIndices);
+			visarChart.loadData(resultIndices);
+		}
+
+		window.onresize = function(){
+			if (loaded) {
+				chart.updateSize();
+			}
+		};
+
+		function onSelectionChange(query) {
+			//d3.select('#selectionReadout').text("Selection: " + query);
+			diffractionChart.highlightData(query, "green");
+			visarChart.highlightData(query, "green");
+		}
+
+		function onMouseOverChange(i, event) {
+			if (i) {
+				//d3.select('#mouseOverReadout').text("Moused over: " + JSON.stringify(chart.results[i]));
+				diffractionChart.selectData([i]);
+				visarChart.selectData([i]);
+			}
+			else {
+				diffractionChart.selectData([]);
+				visarChart.selectData([]);
+			}
+		}
+
+		function pad(num, size){ return ('000000000' + num).substr(-size); }
+		
+		function getDiffData(i) {
+			if (loaded) {
+				var id = chart.results[i].run;
+				return [
+					{file: "_1DSpectra/r" + pad(id,4) + "-e00000001-spectrum.txt", color: "blue", column: -1},
+					{file: "_1DSpectra/r" + pad(id,4) + "-e00000002-spectrum.txt", color: "red", column: -1}];
+			}
+
+			return null;
+		}
+
+		function getVisarData(i) {
+			if (loaded) {
+				var id = chart.results[i].run;
+				
+				return [
+					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", column: 0},
+					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", column: 1}];
+			}
+
+			return null;
+		}
+	</script>
+</body>
