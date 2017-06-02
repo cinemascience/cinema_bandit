@@ -3,6 +3,7 @@ function LineChart(parent, getData, onLineHover) {
 	this.parent = parent;
 	this.onLineHover = onLineHover;
     this.highlighted = [];
+    this.queue = d3.queue();
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
 	canvas = parent.append("canvas")
 		.attr("width", 800)
@@ -118,6 +119,8 @@ function LineChart(parent, getData, onLineHover) {
     this.loadedData = {};
     // all = 0; highlighted = 1;
     this.drawMode = 0;
+    this.version = 0;
+    this.dataLoaded = false;
 
 
 }
@@ -189,6 +192,7 @@ LineChart.prototype.loadData = function(query) {
 					self.highlighted = self.fullDsList;
 					self.xAxis();
 					self.yAxis();
+					self.dataLoaded = true;
 				}
 	            
 
@@ -252,6 +256,11 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 
 LineChart.prototype.highlightData = function(query, color) {
 	var self = this;
+
+	if (!self.dataLoaded) {
+		return;
+	}
+
 	//self.level1.fillRect(0,0,self.internalWidth,self.internalHeight);
 	//self.level2.fillRect(0,0,self.internalWidth,self.internalHeight);
 	self.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
@@ -273,7 +282,41 @@ LineChart.prototype.highlightData = function(query, color) {
 	self.xh.domain(d3.extent(extentX, function(d) { return d; }));
 	self.yh.domain(d3.extent(extentY, function(d) { return d; }));
 
-	this.drawLines(self.level2, dsList, color);
+	self.drawLines(self.level2, dsList, color);
+
+		//self.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
+
+	self.version = self.version + 1;
+
+		var q = d3.queue();
+		q.defer(function(callback) {
+			var ver = self.version;
+			setTimeout(function() {
+				if (ver == self.version) {
+					//console.log('' + ver + ': ' + self.version);
+					self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
+					self.drawLines(self.idContext, dsList, 'id');
+					//console.log("cleared");		
+				}
+				callback(null); 
+			}, 2000);
+			q.await(function(error) {
+				if (error) throw error;
+				//console.log("Goodbye!"); 
+			});
+					
+		});
+	/*var q = d3.queue();
+	q.defer(function(callback) {
+			self.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
+			self.drawLines(self.idContext, dsList, 'id');
+			console.log("cleared");
+			callback(null); 
+			q.await(function(error) {
+				if (error) throw error;
+				console.log("Goodbye!"); 
+			});
+	});*/
 	//this.drawLines(self.idContext, dsList, 'id');
 	this.highlighted = dsList;
 }

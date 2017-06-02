@@ -5,6 +5,7 @@
 	<meta name='author' content="Cameron Tauxe">
 	<link rel='stylesheet' href='example.css'>
 	<script src="d3.v3.min.js"></script>
+	<script src="d3-queue.min.js"></script>
 	<script src = 'ParallelCoordinatesChart.js'></script>
 	<script src = 'LineChart.js'></script>
 </head>
@@ -55,6 +56,7 @@
 
 		function onSelectionChange(query) {
 			//d3.select('#selectionReadout').text("Selection: " + query);
+			//console.log("onSelectionChange " + loaded + ' ' + query.length);
 			diffractionChart.highlightData(query, "green");
 			visarChart.highlightData(query, "green");
 		}
@@ -95,6 +97,9 @@
 				return [
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", column: 0},
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", column: 1}];
+					//,
+					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
+					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];
 			}
 
 			return null;
