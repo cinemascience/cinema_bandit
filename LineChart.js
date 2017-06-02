@@ -1,3 +1,5 @@
+'use strict';
+
 function LineChart(parent, getData, onLineHover) {
 	var self = this;
 	this.parent = parent;
@@ -5,7 +7,7 @@ function LineChart(parent, getData, onLineHover) {
     this.highlighted = [];
     this.queue = d3.queue();
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
-	canvas = parent.append("canvas")
+	var canvas = parent.append("canvas")
 		.attr("width", 800)
 		.attr("height", 500)
 		.attr("style", "z-index: 1;position:relative;left:0px;top:0px;");
@@ -61,7 +63,7 @@ function LineChart(parent, getData, onLineHover) {
     	var imageData = self.idContext.getImageData(d3.event.offsetX*2-1, d3.event.offsetY*2-1, 3, 3).data;
     	//console.log(imageData);
     	var vals = []
-    	for (f = 0; f < imageData.length/4; f++) {
+    	for (var f = 0; f < imageData.length/4; f++) {
     		vals.push(imageData[f*4] + imageData[f*4 + 1]*256 + imageData[f*4 + 2]*256*256);
     	}
     	vals.sort();
@@ -69,7 +71,7 @@ function LineChart(parent, getData, onLineHover) {
 
     	var val = -1;
     	var freq = 0;
-    	for (f = 0; f < vals.length; f++) {
+    	for (var f = 0; f < vals.length; f++) {
     		if (freq == 4) {
     			break;
     		}
@@ -83,7 +85,7 @@ function LineChart(parent, getData, onLineHover) {
     	}
 
     	var found = false;
-    	for (f = 0; f < self.highlighted.length; f++) {
+    	for (var f = 0; f < self.highlighted.length; f++) {
     		if (self.highlighted[f].id == (val-1)) {
     			found = true;
     			break;
