@@ -65,7 +65,7 @@
 		}
 
 		function onMouseOverChange(i, event) {
-			if (i) {
+			if (i != null) {
 				//d3.select('#mouseOverReadout').text("Moused over: " + JSON.stringify(chart.results[i]));
 				diffractionChart.selectData([i]);
 				visarChart.selectData([i]);
@@ -92,7 +92,6 @@
 		function getVisarData(i) {
 			if (loaded) {
 				var id = chart.results[i].run;
-				
 				return [
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", column: 0},
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", column: 1}];

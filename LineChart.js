@@ -58,9 +58,10 @@ function LineChart(parent, getData, onLineHover) {
 	d3.select(canvas.node()).on("mousemove", function() {
     	//console.log('' + d3.event.offsetX + ',' + d3.event.offsetY);
     	var imageData = self.idContext.getImageData(d3.event.offsetX*2-1, d3.event.offsetY*2-1, 3, 3).data;
+    	//console.log(imageData);
     	var vals = []
     	for (f = 0; f < imageData.length/4; f++) {
-    		vals.push(imageData[f*4]);
+    		vals.push(imageData[f*4] + imageData[f*4 + 1]*256 + imageData[f*4 + 2]*256*256);
     	}
     	vals.sort();
     	//console.log(vals);
@@ -91,7 +92,7 @@ function LineChart(parent, getData, onLineHover) {
 
     	//console.log('' + val);
     	if (found && freq >= 4 && val > 0) {
-    		//console.log('select');
+    		//console.log('select' + (val-1));
     		//self.selectData([val-1]);
     		self.onLineHover(val-1, d3.event);
     	}
@@ -212,7 +213,12 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 	dsList.forEach(function(item, index) {
 		if (color) {
 			if (color == 'id') {
-				context.strokeStyle = 'rgb('+(item.id+1)+',0,0)';//color;
+				var id = (item.id + 1);
+				var b = Math.floor(id / 256 / 256);
+				var g = Math.floor((id - b*256*256) / 256);
+				var r = (id - b*256*256 - g*256);
+				//context.strokeStyle = 'rgb('+r+',' + g + ',' + b + ')';//color;
+				context.strokeStyle = 'rgb('+r+','+g+','+b+')';//color;
 			}
 			else {
 				context.strokeStyle = color;
@@ -280,6 +286,8 @@ LineChart.prototype.selectData = function(query) {
 	query.forEach(function(item, index) {
 		dsList.push.apply(dsList, self.loadedData[item]);
 	});
+
+	//console.log(query);
 
 	this.drawLines(self.level3, dsList);
 }
