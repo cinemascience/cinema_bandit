@@ -27,16 +27,19 @@
 	<script>
 		var loaded = false;
 		var chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
-												'GF-HP/GF-HP.csv',
+												//'GF-HP/GF-HP.csv',
 												//'GF-LP/GF-LP.csv',
 												//'LANLHigh-O/LANLHigh-O.csv',
 												//'LANLLow-O/LANLLow-O.csv',
 												//'LANLMed-O/LANLMed-O.csv',
+												//'simresults/Al.design.3.numbered.csv',
+												'simresults/Al.design.1000.numbered.csv',
 												doneLoading,
 												onSelectionChange,
 												onMouseOverChange);
 		var diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover);
-		var visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover);
+		//var visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover);
+		var visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover);
 
 		function doneLoading() {
 			loaded = true;
@@ -97,6 +100,19 @@
 				return [
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", column: 0},
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", column: 1}];
+					//,
+					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
+					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];
+			}
+
+			return null;
+		}
+
+		function getVisarData2(i) {
+			if (loaded) {
+				var id = i+1;
+				return [
+					{file: "simresults/Shot104S_" + pad(id,3) + "_TitleAl5083.FreeSurface.000001", color: "blue", column: 3, delimiter: " "}];
 					//,
 					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
 					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];

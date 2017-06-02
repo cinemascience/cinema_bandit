@@ -127,6 +127,14 @@ function LineChart(parent, getData, onLineHover) {
 
 }
 
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function replaceAll(str, find, replace) {
+  return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
 LineChart.prototype.loadData = function(query) {
 	var self = this;
 	var dataSetsProcessed = 0;
@@ -143,6 +151,29 @@ LineChart.prototype.loadData = function(query) {
 	    	d3.text(dataSet.file, function(text) {
 
 	    		if (text) {
+	    			// /*  correct for white space delemited
+	    			if (dataSet.delimiter == " ") {
+	    				var lines = text.split('\n');
+		    			lines = lines.slice(2, lines.length);
+		    			lines.forEach(function(item, index) {
+		    				if (index == 0) {
+		    					text = lines[index].trim();
+		    				}
+		    				else {
+		    					if (index % 10 == 0) {
+		    						text = text + "\n" + lines[index].trim();
+		    					}
+		    				}
+		    				//lines[index] = lines[index].trim();
+		    			});
+		    			//text = lines.join('\n');//.replace(" ","\t");
+		    			text = replaceAll(text,"  ","\t");
+	    			}
+	    			
+
+	    			//console.log(text);
+	    			//	*/
+
 	    			var rows = d3.tsv.parseRows(text).map(function(row) {
 						return row.map(function(value) {
 				    		return +value;
