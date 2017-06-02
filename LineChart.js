@@ -18,14 +18,15 @@ function LineChart(parent, getData) {
 	this.level0.translate(this.margin.left, this.margin.top);
     this.level0.fillRect(0,0,this.internalWidth,this.internalHeight);
     canvas = parent.append("canvas")
-		.attr("width", this.canvasRect.width)
-		.attr("height", this.canvasRect.width)
+		.attr("width", this.canvasRect.width*2)
+		.attr("height", this.canvasRect.width*2)
 		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;visibility: hidden;");
+		//.attr("style", "z-index: 2;position:absolute;left:0px;top:0px");
 	this.idContext = canvas.node().getContext("2d");
 	this.idContext.fillStyle = "white";
-	this.idContext.translate(this.margin.left, this.margin.top);
+	this.idContext.translate(this.margin.left*2, this.margin.top*2);
 	this.idContext.lineWidth=3;
-    this.idContext.clearRect(0, 0, this.internalWidth,this.internalHeight);
+    this.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
@@ -55,9 +56,7 @@ function LineChart(parent, getData) {
 
 	d3.select(canvas.node()).on("mousemove", function() {
     	//console.log('' + d3.event.offsetX + ',' + d3.event.offsetY);
-    	var imageData = self.idContext.getImageData(d3.event.offsetX-1, d3.event.offsetY-1, 3, 3).data;
-    	var x = d3.event.offsetX;
-    	var y = d3.event.offsetY;
+    	var imageData = self.idContext.getImageData(d3.event.offsetX*2-1, d3.event.offsetY*2-1, 3, 3).data;
     	var vals = []
     	for (f = 0; f < imageData.length/4; f++) {
     		vals.push(imageData[f*4]);
@@ -107,6 +106,8 @@ function LineChart(parent, getData) {
     this.getData = getData;
     this.x = d3.scale.linear().range([0, this.internalWidth]);
     this.y = d3.scale.linear().range([this.internalHeight, 0]);
+    this.x2 = d3.scale.linear().range([0, this.internalWidth*2]);
+    this.y2 = d3.scale.linear().range([this.internalHeight*2, 0]);
     this.xh = d3.scale.linear().range([0, this.internalWidth]);
     this.yh = d3.scale.linear().range([this.internalHeight, 0]);
     this.fullDsList = [];
@@ -173,6 +174,8 @@ LineChart.prototype.loadData = function(query) {
 	    		if (dataSetsProcessed == query.length) {
 				    self.x.domain(d3.extent(extentX, function(d) { return d; }));
 					self.y.domain(d3.extent(extentY, function(d) { return d; }));
+				    self.x2.domain(d3.extent(extentX, function(d) { return d; }));
+					self.y2.domain(d3.extent(extentY, function(d) { return d; }));
 					self.xh.domain(d3.extent(extentX, function(d) { return d; }));
 					self.yh.domain(d3.extent(extentY, function(d) { return d; }));
 
@@ -217,12 +220,22 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 		}
 		context.beginPath();
 	   	item.rows.forEach(function(item, index) {
-	    	if (index == 0) {
-				context.moveTo(self.drawMode == 1 ? self.xh(item.x) : self.x(item.x), self.drawMode == 1 ? self.yh(item.y) : self.y(item.y));
-	    	}
-	    	else {
-				context.lineTo(self.drawMode == 1 ? self.xh(item.x) : self.x(item.x), self.drawMode == 1 ? self.yh(item.y) : self.y(item.y));
-	    	}
+	   		if (color == 'id') {
+		    	if (index == 0) {
+					context.moveTo(self.x2(item.x), self.y2(item.y));
+		    	}
+		    	else {
+					context.lineTo(self.x2(item.x), self.y2(item.y));	
+				}
+	   		}
+	   		else {
+		    	if (index == 0) {
+					context.moveTo(self.drawMode == 1 ? self.xh(item.x) : self.x(item.x), self.drawMode == 1 ? self.yh(item.y) : self.y(item.y));
+		    	}
+		    	else {
+					context.lineTo(self.drawMode == 1 ? self.xh(item.x) : self.x(item.x), self.drawMode == 1 ? self.yh(item.y) : self.y(item.y));
+		    	}
+	   		}
 	    });
 		context.stroke();
 	});
