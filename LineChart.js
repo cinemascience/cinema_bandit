@@ -1,6 +1,7 @@
-function LineChart(parent, getData) {
+function LineChart(parent, getData, onLineHover) {
 	var self = this;
 	this.parent = parent;
+	this.onLineHover = onLineHover;
     this.highlighted = [];
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
 	canvas = parent.append("canvas")
@@ -91,10 +92,12 @@ function LineChart(parent, getData) {
     	//console.log('' + val);
     	if (found && freq >= 4 && val > 0) {
     		//console.log('select');
-    		self.selectData([val-1]);
+    		//self.selectData([val-1]);
+    		self.onLineHover(val-1, d3.event);
     	}
     	else {
-    		self.selectData([]);
+    		self.onLineHover(null, d3.event);
+    		//self.selectData([]);
     	}
       });
 

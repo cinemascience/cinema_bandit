@@ -34,8 +34,8 @@
 												doneLoading,
 												onSelectionChange,
 												onMouseOverChange);
-		var diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData);
-		var visarChart = new LineChart(d3.select('#visar'), getVisarData);
+		var diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover);
+		var visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover);
 
 		function doneLoading() {
 			loaded = true;
@@ -57,6 +57,11 @@
 			//d3.select('#selectionReadout').text("Selection: " + query);
 			diffractionChart.highlightData(query, "green");
 			visarChart.highlightData(query, "green");
+		}
+
+		function onLineHover(i, event) {
+			chart.setHighlight(i);
+			onMouseOverChange(i, event);
 		}
 
 		function onMouseOverChange(i, event) {
