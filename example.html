@@ -12,6 +12,14 @@
 <body>
 	<div id="header">
 		<h1>Cinema Database Explorer</h1>
+		<select id="database" onchange="load()">
+			<option value="GF-HP/GF-HP.csv">GF-HP</option>
+			<option value="GF-LP/GF-LP.csv">F-LP</option>
+			<option value="LANLHigh-O/LANLHigh-O.csv">LANLHigh-O</option>
+			<option value="LANLLow-O/LANLLow-O.csv">LANLLow-O</option>
+			<option value="LANLMed-O/LANLMed-O.csv">LANLMed-O</option>
+			<option value="simresults/Al.design.1000.numbered.csv">Flag Simulation</option>
+		</select>
 	</div>
 	<div id="svgArea">
 		<div id="svgContainer"></div>
@@ -26,20 +34,41 @@
 
 	<script>
 		var loaded = false;
-		var chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
+		var chart;
+		var diffractionChart;
+		var visarChart;
+		load();
+
+		function load() {
+
+			d3.select('#svgContainer').html('');
+			d3.select('#visar').html('');
+			d3.select('#diffraction1D').html('');
+
+			dbName = d3.select('#database').node().value;
+			console.log(dbName);
+
+			chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
+												dbName,
 												//'GF-HP/GF-HP.csv',
 												//'GF-LP/GF-LP.csv',
 												//'LANLHigh-O/LANLHigh-O.csv',
 												//'LANLLow-O/LANLLow-O.csv',
 												//'LANLMed-O/LANLMed-O.csv',
 												//'simresults/Al.design.3.numbered.csv',
-												'simresults/Al.design.1000.numbered.csv',
+												//'simresults/Al.design.1000.numbered.csv',
 												doneLoading,
 												onSelectionChange,
 												onMouseOverChange);
-		var diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover);
-		//var visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover);
-		var visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover);
+			diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover);
+			
+			if (dbName == "simresults/Al.design.1000.numbered.csv") {
+				visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover);
+			}
+			else {
+				visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover);
+			}
+		}
 
 		function doneLoading() {
 			loaded = true;
