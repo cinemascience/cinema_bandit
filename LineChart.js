@@ -181,10 +181,14 @@ LineChart.prototype.loadData = function(query) {
 		            });
 
 			    	var rows2 = []
-			    	if (dataSet.column >= 0) {	
+			    	if (dataSet.columnY >= 0) {	
 				    	rows.forEach(function(item, index) {
 							if (index % 1 == 0) {
-						    	rows2.push({x : index, y : item[dataSet.column]});
+								var xval = index;
+								if (dataSet.columnX >= 0) {
+									xval = item[dataSet.columnX];
+								}
+						    	rows2.push({x : xval, y : item[dataSet.columnY]});
 							}
 					    });
 			    	}

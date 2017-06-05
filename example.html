@@ -87,8 +87,8 @@
 			if (loaded) {
 				var id = chart.results[i].run;
 				return [
-					{file: "_1DSpectra/r" + pad(id,4) + "-e00000001-spectrum.txt", color: "blue", column: -1},
-					{file: "_1DSpectra/r" + pad(id,4) + "-e00000002-spectrum.txt", color: "red", column: -1}];
+					{file: "_1DSpectra/r" + pad(id,4) + "-e00000001-spectrum.txt", color: "blue", columnX: -1, columnY: -1},
+					{file: "_1DSpectra/r" + pad(id,4) + "-e00000002-spectrum.txt", color: "red", columnX: -1, columnY: -1}];
 			}
 
 			return null;
@@ -98,8 +98,8 @@
 			if (loaded) {
 				var id = chart.results[i].run;
 				return [
-					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", column: 0},
-					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", column: 1}];
+					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", columnX: -1, columnY: 0},
+					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", columnX: -1, columnY: 1}];
 					//,
 					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
 					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];
@@ -112,7 +112,7 @@
 			if (loaded) {
 				var id = i+1;
 				return [
-					{file: "simresults/Shot104S_" + pad(id,3) + "_TitleAl5083.FreeSurface.000001", color: "blue", column: 3, delimiter: " "}];
+					{file: "simresults/Shot104S_" + pad(id,3) + "_TitleAl5083.FreeSurface.000001", color: "blue", columnX: 1, columnY: 3, delimiter: " "}];
 					//,
 					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
 					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];
