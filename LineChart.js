@@ -46,7 +46,7 @@ function LineChart(parent, getData, onLineHover) {
 	this.canvasList.push(canvas);
 	this.level1 = canvas.node().getContext("2d");
 	this.level1.fillStyle = "white";
-	this.level1.globalAlpha = 0.2;
+	this.level1.globalAlpha = 0.125;
 	this.level1.globalCompositeOperation = "difference";
 	this.level1.translate(this.margin.left, this.margin.top);
     this.level1.clearRect(0, 0, this.internalWidth,this.internalHeight);
@@ -374,7 +374,9 @@ LineChart.prototype.highlightData = function(query, color) {
 
 LineChart.prototype.selectData = function(query) {
 	var self = this;
-	self.level3.clearRect(0, 0, this.internalWidth,this.internalHeight);
+
+	self.level3.clearRect(-self.margin.left, -self.margin.top, self.canvasRect.width, self.canvasRect.height);
+	//self.level3.clearRect(0, 0, this.internalWidth,this.internalHeight);
 
 	var dsList = [];
 	query.forEach(function(item, index) {
