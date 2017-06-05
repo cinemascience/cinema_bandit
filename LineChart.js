@@ -7,10 +7,16 @@ function LineChart(parent, getData, onLineHover) {
     this.highlighted = [];
     this.queue = d3.queue();
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
+	//	.attr('width','100%')
+	//	.attr('height','100%');
+	this.parentRect = parent.node().getBoundingClientRect();
+	console.log('' + this.parentRect.width + ',' + this.parentRect.height)
 	var canvas = parent.append("canvas")
-		.attr("width", 800)
-		.attr("height", 500)
+		.attr('width', this.parentRect.width)
+		.attr('height', this.parentRect.height)
+		.attr('preserveAspectRatio','none')
 		.attr("style", "z-index: 1;position:relative;left:0px;top:0px;");
+	this.canvasList = [canvas];
 	this.canvasRect = canvas.node().getBoundingClientRect();
 	this.canvasX = d3.transform(parent.attr("transform")).translate[0];
 	this.canvasY = d3.transform(parent.attr("transform")).translate[1];
@@ -26,6 +32,8 @@ function LineChart(parent, getData, onLineHover) {
 		.attr("height", this.canvasRect.width*2)
 		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;visibility: hidden;");
 		//.attr("style", "z-index: 2;position:absolute;left:0px;top:0px");
+	this.canvasList.push(canvas);
+	this.idCanvas = canvas;
 	this.idContext = canvas.node().getContext("2d");
 	this.idContext.fillStyle = "white";
 	this.idContext.translate(this.margin.left*2, this.margin.top*2);
@@ -35,6 +43,7 @@ function LineChart(parent, getData, onLineHover) {
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
 		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;");
+	this.canvasList.push(canvas);
 	this.level1 = canvas.node().getContext("2d");
 	this.level1.fillStyle = "white";
 	this.level1.globalAlpha = 0.2;
@@ -45,6 +54,7 @@ function LineChart(parent, getData, onLineHover) {
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
 		.attr("style", "z-index: 3;position:absolute;left:0px;top:0px;");
+	this.canvasList.push(canvas);
 	this.level2 = canvas.node().getContext("2d");
 	this.level2.fillStyle = "white";
 	this.level2.lineWidth=1;
@@ -57,6 +67,7 @@ function LineChart(parent, getData, onLineHover) {
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.width)
 		.attr("style", "z-index: 4;position:absolute;left:0px;top:0px;");
+	this.canvasList.push(canvas);
 
 	d3.select(canvas.node()).on("mousemove", function() {
     	//console.log('' + d3.event.offsetX + ',' + d3.event.offsetY);
@@ -124,6 +135,8 @@ function LineChart(parent, getData, onLineHover) {
     this.version = 0;
     this.dataLoaded = false;
 
+    this.extentX = []
+    this.extentY = []
 
 }
 
@@ -138,8 +151,8 @@ function replaceAll(str, find, replace) {
 LineChart.prototype.loadData = function(query) {
 	var self = this;
 	var dataSetsProcessed = 0;
-	var extentX = [];
-	var extentY = [];
+	this.extentX = [];
+	this.extentY = [];
 
 	query.forEach(function(item, index) {
 		var d = self.getData(item);
@@ -154,6 +167,7 @@ LineChart.prototype.loadData = function(query) {
 	    			// /*  correct for white space delemited
 	    			if (dataSet.delimiter == " ") {
 	    				var lines = text.split('\n');
+	    				text = '';
 		    			lines = lines.slice(2, lines.length);
 		    			lines.forEach(function(item, index) {
 		    				if (index == 0) {
@@ -203,8 +217,8 @@ LineChart.prototype.loadData = function(query) {
 				    dsList.push({dataSet: dataSet, rows: rows2, id: id});
 				    self.fullDsList.push({dataSet: dataSet, rows: rows2, id: id});
 
-				    extentX.push.apply(extentX, d3.extent(rows2, function(d) { return d.x; }));
-				    extentY.push.apply(extentY, d3.extent(rows2, function(d) { return d.y; }));
+				    self.extentX.push.apply(self.extentX, d3.extent(rows2, function(d) { return d.x; }));
+				    self.extentY.push.apply(self.extentY, d3.extent(rows2, function(d) { return d.y; }));
 
 					if (dataSetIndex == d.length - 1) {
 				    	self.loadedData[id] = dsList;
@@ -216,12 +230,12 @@ LineChart.prototype.loadData = function(query) {
 				}
 
 	    		if (dataSetsProcessed == query.length) {
-				    self.x.domain(d3.extent(extentX, function(d) { return d; }));
-					self.y.domain(d3.extent(extentY, function(d) { return d; }));
-				    self.x2.domain(d3.extent(extentX, function(d) { return d; }));
-					self.y2.domain(d3.extent(extentY, function(d) { return d; }));
-					self.xh.domain(d3.extent(extentX, function(d) { return d; }));
-					self.yh.domain(d3.extent(extentY, function(d) { return d; }));
+				    self.x.domain(d3.extent(self.extentX, function(d) { return d; }));
+					self.y.domain(d3.extent(self.extentY, function(d) { return d; }));
+				    self.x2.domain(d3.extent(self.extentX, function(d) { return d; }));
+					self.y2.domain(d3.extent(self.extentY, function(d) { return d; }));
+					self.xh.domain(d3.extent(self.extentX, function(d) { return d; }));
+					self.yh.domain(d3.extent(self.extentY, function(d) { return d; }));
 
 					self.drawLines(self.level1, self.fullDsList, "lightgrey");
 					self.drawLines(self.idContext, self.fullDsList, "id");
@@ -431,4 +445,68 @@ LineChart.prototype.yAxis = function() {
   self.level0.font = "bold 10px sans-serif";
   //context.fillText("Price (US$)", -10, 10);
   self.level0.restore();
+}
+
+LineChart.prototype.updateSize = function() {
+	var self = this;
+
+	this.level0.translate(-this.margin.left, -this.margin.top);
+	this.level1.translate(-this.margin.left, -this.margin.top);
+	this.level2.translate(-this.margin.left, -this.margin.top);
+	this.level3.translate(-this.margin.left, -this.margin.top);
+	this.idContext.translate(-this.margin.left, -this.margin.top);
+
+	this.level0.clearRect(0, 0, this.parentRect.width,this.parentRect.height);
+	this.level1.clearRect(0, 0, this.parentRect.width,this.parentRect.height);
+	this.level2.clearRect(0, 0, this.parentRect.width,this.parentRect.height);
+	this.level3.clearRect(0, 0, this.parentRect.width,this.parentRect.height);
+	this.idContext.clearRect(0, 0, this.parentRect.width*2,this.parentRect.height*2);
+
+	this.parentRect = this.parent.node().getBoundingClientRect();
+	this.internalWidth = this.parentRect.width - this.margin.left - this.margin.right;
+	this.internalHeight = this.parentRect.height - this.margin.top - this.margin.bottom;
+
+	this.canvasRect = this.canvasList[0].node().getBoundingClientRect();
+	this.canvasList.forEach(function(item, index) {
+		item.attr('width', self.parentRect.width)
+			.attr('height', self.parentRect.height)
+			//.attr("style", "z-index: "+ index +";position:absolute;left:0px;top:0px");
+	});
+	this.idCanvas.attr('width', this.parentRect.width*2)
+			.attr('height', this.parentRect.height*2);
+
+	this.level0.translate(this.margin.left, this.margin.top);
+	this.level1.translate(this.margin.left, this.margin.top);
+	this.level2.translate(this.margin.left, this.margin.top);
+	this.level3.translate(this.margin.left, this.margin.top);
+	this.idContext.translate(this.margin.left*2, this.margin.top*2);
+	
+	this.x = d3.scale.linear().range([0, this.internalWidth]);
+    this.y = d3.scale.linear().range([this.internalHeight, 0]);
+    this.x2 = d3.scale.linear().range([0, this.internalWidth*2]);
+    this.y2 = d3.scale.linear().range([this.internalHeight*2, 0]);
+    this.xh = d3.scale.linear().range([0, this.internalWidth]);
+    this.yh = d3.scale.linear().range([this.internalHeight, 0]);
+
+    this.x.domain(d3.extent(this.extentX, function(d) { return d; }));
+	this.y.domain(d3.extent(this.extentY, function(d) { return d; }));
+	this.x2.domain(d3.extent(this.extentX, function(d) { return d; }));
+	this.y2.domain(d3.extent(this.extentY, function(d) { return d; }));
+	this.xh.domain(d3.extent(this.extentX, function(d) { return d; }));
+	this.yh.domain(d3.extent(this.extentY, function(d) { return d; }));
+
+	this.level0.fillStyle = "white";
+    this.level0.fillRect(0,0,this.internalWidth,this.internalHeight);
+	this.idContext.lineWidth=3;
+	this.level1.globalAlpha = 0.2;
+	this.level1.globalCompositeOperation = "difference";
+	this.level2.globalAlpha = 0.4;
+	this.level2.globalCompositeOperation = "difference";
+	this.level3.lineWidth=3;
+
+    self.drawLines(self.level1, self.fullDsList, "lightgrey");
+	self.drawLines(self.idContext, self.highlighted, "id");
+	self.drawLines(self.level2, self.highlighted, "green");
+	self.xAxis();
+	self.yAxis();
 }

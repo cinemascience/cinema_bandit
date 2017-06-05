@@ -24,10 +24,11 @@
 	<div id="svgArea">
 		<div id="svgContainer"></div>
 	</div>
-	<div id="resultsArea" style="margin-left: auto; margin-right: auto;">
+	<div id="resultsArea" style="margin-left: auto; margin-right: auto;" width="100%">
 		<!--canvas width="600" height="500" id="diffCanvas"></canvas-->
-		<div style="float: left;"><div id="visar"></div></div>
-		<div style="float: left;"><div id="diffraction1D"></div></div>
+		<div id="visar" class="lineChart"></div>
+		<div id="diffraction1D" class="lineChart"></div>
+		<div id="diffraction2D" class="lineChart"></div>
 		<div id="selectionReadout"></div>
 		<div id="mouseOverReadout"></div>
 	</div>
@@ -37,6 +38,7 @@
 		var chart;
 		var diffractionChart;
 		var visarChart;
+		var diffractionImage;
 		load();
 
 		function load() {
@@ -44,6 +46,7 @@
 			d3.select('#svgContainer').html('');
 			d3.select('#visar').html('');
 			d3.select('#diffraction1D').html('');
+			d3.select('#diffraction2D').html('');
 
 			dbName = d3.select('#database').node().value;
 			console.log(dbName);
@@ -61,6 +64,7 @@
 												onSelectionChange,
 												onMouseOverChange);
 			diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover);
+			diffractionImage = new LineChart(d3.select('#diffraction2D'), getDiffData, onLineHover);
 			
 			if (dbName == "simresults/Al.design.1000.numbered.csv") {
 				visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover);
@@ -83,6 +87,9 @@
 		window.onresize = function(){
 			if (loaded) {
 				chart.updateSize();
+				diffractionChart.updateSize();
+				visarChart.updateSize();
+				diffractionImage.updateSize();
 			}
 		};
 
