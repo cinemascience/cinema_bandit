@@ -5,6 +5,7 @@ function LineChart(parent, getData, onLineHover) {
 	this.parent = parent;
 	this.onLineHover = onLineHover;
     this.highlighted = [];
+    this.dragInfo = {};
     this.queue = d3.queue();
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
 	//	.attr('width','100%')
@@ -29,7 +30,7 @@ function LineChart(parent, getData, onLineHover) {
     this.level0.fillRect(0,0,this.internalWidth,this.internalHeight);
     canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width*2)
-		.attr("height", this.canvasRect.width*2)
+		.attr("height", this.canvasRect.height*2)
 		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;visibility: hidden;");
 		//.attr("style", "z-index: 2;position:absolute;left:0px;top:0px");
 	this.canvasList.push(canvas);
@@ -41,7 +42,7 @@ function LineChart(parent, getData, onLineHover) {
     this.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
-		.attr("height", this.canvasRect.width)
+		.attr("height", this.canvasRect.height)
 		.attr("style", "z-index: 2;position:absolute;left:0px;top:0px;");
 	this.canvasList.push(canvas);
 	this.level1 = canvas.node().getContext("2d");
@@ -52,7 +53,7 @@ function LineChart(parent, getData, onLineHover) {
     this.level1.clearRect(0, 0, this.internalWidth,this.internalHeight);
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
-		.attr("height", this.canvasRect.width)
+		.attr("height", this.canvasRect.height)
 		.attr("style", "z-index: 3;position:absolute;left:0px;top:0px;");
 	this.canvasList.push(canvas);
 	this.level2 = canvas.node().getContext("2d");
@@ -65,11 +66,23 @@ function LineChart(parent, getData, onLineHover) {
     this.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
     canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
-		.attr("height", this.canvasRect.width)
+		.attr("height", this.canvasRect.height)
 		.attr("style", "z-index: 4;position:absolute;left:0px;top:0px;");
 	this.canvasList.push(canvas);
-
+	this.level3 = canvas.node().getContext("2d");
 	d3.select(canvas.node()).on("mousemove", function() {
+		if (self.dragInfo.dragging) {
+			//console.log('' + self.margin.left + ',' + self.margin.top, + ',' + self.internalWidth + ',' + self.internalHeight);
+			//self.level3.clearRect(0, 0, self.internalWidth,self.internalHeight);
+			self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
+			self.level3.beginPath();
+			self.level3.rect(self.dragInfo.startX, self.dragInfo.startY, d3.event.offsetX-self.margin.left-self.dragInfo.startX, d3.event.offsetY-self.margin.top-self.dragInfo.startY);
+			self.level3.stroke(); 
+			self.level3.closePath();
+			//
+			return;
+		}
+
     	//console.log('' + d3.event.offsetX + ',' + d3.event.offsetY);
     	var imageData = self.idContext.getImageData(d3.event.offsetX*2-1, d3.event.offsetY*2-1, 3, 3).data;
     	//console.log(imageData);
@@ -115,8 +128,21 @@ function LineChart(parent, getData, onLineHover) {
     		//self.selectData([]);
     	}
       });
+	d3.select(canvas.node()).on("mousedown", function() {
+		self.dragInfo.startX = d3.event.offsetX-self.margin.left;
+		self.dragInfo.startY = d3.event.offsetY-self.margin.top;
+		self.dragInfo.dragging = true;
+	});
+	d3.select(canvas.node()).on("mouseup", function() {
+		console.log('' + self.dragInfo.startX + '-' + d3.event.offsetX + ',' + self.dragInfo.startY + '-' +  + d3.event.offsetY);
+		self.dragInfo.endX = d3.event.offsetX-self.margin.left;
+		self.dragInfo.endY = d3.event.offsetY-self.margin.top;
+		self.dragInfo.dragging = false;
+		self.resetButton.style("visibility", "visible");
+		self.zoom();
+	});
 
-	this.level3 = canvas.node().getContext("2d");
+
 	this.level3.fillStyle = "white";
 	this.level3.translate(this.margin.left, this.margin.top);
     this.level3.clearRect(0, 0, this.internalWidth,this.internalHeight);
@@ -126,8 +152,6 @@ function LineChart(parent, getData, onLineHover) {
     this.y = d3.scale.linear().range([this.internalHeight, 0]);
     this.x2 = d3.scale.linear().range([0, this.internalWidth*2]);
     this.y2 = d3.scale.linear().range([this.internalHeight*2, 0]);
-    this.xh = d3.scale.linear().range([0, this.internalWidth]);
-    this.yh = d3.scale.linear().range([this.internalHeight, 0]);
     this.fullDsList = [];
     this.loadedData = {};
     // all = 0; highlighted = 1;
@@ -135,9 +159,19 @@ function LineChart(parent, getData, onLineHover) {
     this.version = 0;
     this.dataLoaded = false;
 
-    this.extentX = []
-    this.extentY = []
+    this.extentX = [];
+    this.extentY = [];
 
+    this.resetButton = parent.append("input")
+		.attr('type', "button")
+		.attr('value', "Reset")
+		.attr("visibility", "hidden")
+		.attr("style", "z-index: 10;position:absolute;left:0px;top:0px; visibility: hidden;");
+
+	d3.select(this.resetButton.node()).on("click", function() {
+		self.resetButton.style("visibility", "hidden");
+		self.reset();
+	});
 }
 
 function escapeRegExp(str) {
@@ -234,8 +268,6 @@ LineChart.prototype.loadData = function(query) {
 					self.y.domain(d3.extent(self.extentY, function(d) { return d; }));
 				    self.x2.domain(d3.extent(self.extentX, function(d) { return d; }));
 					self.y2.domain(d3.extent(self.extentY, function(d) { return d; }));
-					self.xh.domain(d3.extent(self.extentX, function(d) { return d; }));
-					self.yh.domain(d3.extent(self.extentY, function(d) { return d; }));
 
 					self.drawLines(self.level1, self.fullDsList, "lightgrey");
 					self.drawLines(self.idContext, self.fullDsList, "id");
@@ -294,10 +326,10 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 	   		}
 	   		else {
 		    	if (index == 0) {
-					context.moveTo(self.drawMode == 1 ? self.xh(item.x) : self.x(item.x), self.drawMode == 1 ? self.yh(item.y) : self.y(item.y));
+					context.moveTo(self.x(item.x), self.y(item.y));
 		    	}
 		    	else {
-					context.lineTo(self.drawMode == 1 ? self.xh(item.x) : self.x(item.x), self.drawMode == 1 ? self.yh(item.y) : self.y(item.y));
+					context.lineTo(self.x(item.x), self.y(item.y));
 		    	}
 	   		}
 	    });
@@ -317,21 +349,10 @@ LineChart.prototype.highlightData = function(query, color) {
 	self.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
 	//this.drawLines(self.level1, self.fullDsList, fallbackColor);
 
-	var extentX = [];
-	var extentY = [];
-
 	var dsList = [];
 	query.forEach(function(item, index) {
 		dsList.push.apply(dsList, self.loadedData[item]);
 	});
-
-	dsList.forEach(function(item, index) {
-		extentX.push.apply(extentX, d3.extent(item.rows, function(d) { return d.x; }));
-		extentY.push.apply(extentY, d3.extent(item.rows, function(d) { return d.y; }));
-	});
-	
-	self.xh.domain(d3.extent(extentX, function(d) { return d; }));
-	self.yh.domain(d3.extent(extentY, function(d) { return d; }));
 
 	self.drawLines(self.level2, dsList, color);
 
@@ -375,15 +396,12 @@ LineChart.prototype.highlightData = function(query, color) {
 LineChart.prototype.selectData = function(query) {
 	var self = this;
 
-	self.level3.clearRect(-self.margin.left, -self.margin.top, self.canvasRect.width, self.canvasRect.height);
-	//self.level3.clearRect(0, 0, this.internalWidth,this.internalHeight);
+	self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
 
 	var dsList = [];
 	query.forEach(function(item, index) {
 		dsList.push.apply(dsList, self.loadedData[item]);
 	});
-
-	//console.log(query);
 
 	this.drawLines(self.level3, dsList);
 }
@@ -487,15 +505,63 @@ LineChart.prototype.updateSize = function() {
     this.y = d3.scale.linear().range([this.internalHeight, 0]);
     this.x2 = d3.scale.linear().range([0, this.internalWidth*2]);
     this.y2 = d3.scale.linear().range([this.internalHeight*2, 0]);
-    this.xh = d3.scale.linear().range([0, this.internalWidth]);
-    this.yh = d3.scale.linear().range([this.internalHeight, 0]);
 
     this.x.domain(d3.extent(this.extentX, function(d) { return d; }));
 	this.y.domain(d3.extent(this.extentY, function(d) { return d; }));
 	this.x2.domain(d3.extent(this.extentX, function(d) { return d; }));
 	this.y2.domain(d3.extent(this.extentY, function(d) { return d; }));
-	this.xh.domain(d3.extent(this.extentX, function(d) { return d; }));
-	this.yh.domain(d3.extent(this.extentY, function(d) { return d; }));
+
+	this.redraw();
+}
+
+LineChart.prototype.zoom = function() {
+	var self = this;
+
+	var extentX = [this.x.invert(this.dragInfo.startX), this.x.invert(this.dragInfo.endX)];
+	var extentY = [this.y.invert(this.dragInfo.startY), this.y.invert(this.dragInfo.endY)];
+
+    this.x.domain(d3.extent(extentX, function(d) { return d; }));
+	this.y.domain(d3.extent(extentY, function(d) { return d; }));
+	this.x2.domain(d3.extent(extentX, function(d) { return d; }));
+	this.y2.domain(d3.extent(extentY, function(d) { return d; }));
+
+	this.redraw();
+}
+
+LineChart.prototype.reset = function() {
+	var self = this;
+
+    this.x.domain(d3.extent(self.extentX, function(d) { return d; }));
+	this.y.domain(d3.extent(self.extentY, function(d) { return d; }));
+	this.x2.domain(d3.extent(self.extentX, function(d) { return d; }));
+	this.y2.domain(d3.extent(self.extentY, function(d) { return d; }));
+
+	this.redraw();
+}
+
+LineChart.prototype.redraw = function() {
+	var self = this;
+
+	this.level0.clearRect(-this.margin.left, -this.margin.top, this.parentRect.width,this.parentRect.height);
+	this.level1.clearRect(-this.margin.left, -this.margin.top, this.parentRect.width,this.parentRect.height);
+	this.level2.clearRect(-this.margin.left, -this.margin.top, this.parentRect.width,this.parentRect.height);
+	this.level3.clearRect(-this.margin.left, -this.margin.top, this.parentRect.width,this.parentRect.height);
+	this.idContext.clearRect(-this.margin.left*2, -this.margin.top*2, this.parentRect.width*2,this.parentRect.height*2);
+
+	this.level1.beginPath()
+	this.level1.rect(0,0,this.internalWidth,this.internalHeight);
+	this.level1.clip();
+	this.level1.closePath();
+
+	this.level2.beginPath()
+	this.level2.rect(0,0,this.internalWidth,this.internalHeight);
+	this.level2.clip();
+	this.level2.closePath();
+
+	this.level3.beginPath()
+	this.level3.rect(0,0,this.internalWidth,this.internalHeight);
+	this.level3.clip();
+	this.level3.closePath();
 
 	this.level0.fillStyle = "white";
     this.level0.fillRect(0,0,this.internalWidth,this.internalHeight);
