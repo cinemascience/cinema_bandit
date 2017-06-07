@@ -17,7 +17,6 @@
 			<option value="GF-LP/GF-LP.csv">F-LP</option>
 			<option value="LANLHigh-O/LANLHigh-O.csv">LANLHigh-O</option>
 			<option value="LANLLow-O/LANLLow-O.csv">LANLLow-O</option>
-			<option value="LANLMed-O/LANLMed-O.csv">LANLMed-O</option>
 			<option value="simresults/Al.design.1000.numbered.csv">Flag Simulation</option>
 		</select>
 	</div>
@@ -38,6 +37,7 @@
 		var chart;
 		var diffractionChart;
 		var visarChart;
+		var alwaysHighlighted = [];
 		//var diffractionImage;
 		load();
 
@@ -109,8 +109,8 @@
 		function onMouseOverChange(i, event) {
 			if (i != null) {
 				var id = chart.results[i].run;
-				diffractionChart.selectData([i]);
-				visarChart.selectData([i]);
+				diffractionChart.selectData([i].concat(alwaysHighlighted));
+				visarChart.selectData([i].concat(alwaysHighlighted));
 				if (dbName == "simresults/Al.design.1000.numbered.csv") {
 					fileName = "Ti-data/Ti-XRD-composite-images/output.jpg";
 					fileName2 = "Ti-data/Ti-XRD-composite-images/output.jpg";
@@ -130,8 +130,8 @@
 				//console.log(fileName);
 			}
 			else {
-				diffractionChart.selectData([]);
-				visarChart.selectData([]);
+				diffractionChart.selectData(alwaysHighlighted);
+				visarChart.selectData(alwaysHighlighted);
 				//d3.select('#diffractionImage1').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
 				//d3.select('#diffractionImage2').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
 				//d3.select('#diffraction2D').attr("src", "");
@@ -157,9 +157,6 @@
 				return [
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", columnX: -1, columnY: 0},
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "red", columnX: -1, columnY: 1}];
-					//,
-					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
-					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];
 			}
 
 			return null;
@@ -168,11 +165,15 @@
 		function getVisarData2(i) {
 			if (loaded) {
 				var id = i+1;
-				return [
-					{file: "simresults/Shot104S_" + pad(id,3) + "_TitleAl5083.FreeSurface.000001", color: "blue", columnX: 1, columnY: 3, delimiter: " "}];
-					//,
-					//{file: "visar/r" + pad(id,3) + ".txt", color: "blue", column: 0},
-					//{file: "visar/r" + pad(id,3) + ".txt", color: "red", column: 1}];
+				var experiment = chart.results[i].Experiment;
+				if (experiment == 1) {
+					alwaysHighlighted.push(i);
+					return [{file: "Boetler-data/Data_S" + pad(chart.results[i].id,3) + "E.txt", color: "red", columnX: 3, columnY: 2}];
+				}
+				else {
+					return [
+						{file: "simresults/Shot104S_" + pad(id,3) + "_TitleAl5083.FreeSurface.000001", color: "blue", columnX: 1, columnY: 3, delimiter: " "}];
+				}
 			}
 
 			return null;
