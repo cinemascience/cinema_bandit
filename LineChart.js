@@ -173,6 +173,49 @@ function LineChart(parent, getData, onLineHover) {
     		return;
     	}
 
+    	if (self.mode == "Include") {
+    		if (self.dragInfo.dragging) {
+    			if (freq >= 4 && val > 0) {
+
+					self.highlighted.push.apply(self.highlighted, self.loadedData[val-1]);
+
+			    	//self.redraw();
+		    		self.redrawContext(self.level2, 1, self.highlighted, 'green');
+		    		self.version2 = self.version2 + 1;
+		    		var dsList = self.highlighted;
+
+					var q = d3.queue();
+					q.defer(function(callback) {
+						var ver = self.version2;
+						setTimeout(function() {
+							if (ver == self.version2) {
+								self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
+								self.drawLines(self.idContext, self.fullDsList, 'id');
+								//console.log("cleared");		
+							}
+							callback(null); 
+						}, 200);
+						q.await(function(error) {
+							if (error) throw error;
+							//console.log("Goodbye!"); 
+						});
+								
+					});
+	    		}
+
+	    		
+    		}
+
+
+    		/*self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
+			self.level3.beginPath();
+			self.level3.arc(d3.event.offsetX-self.margin.left,d3.event.offsetY-self.margin.top,5,0,2*Math.PI);
+			self.level3.stroke();
+			self.level3.closePath();*/
+
+    		return;
+    	}
+
 
     	//console.log('' + val);
     	if (found && freq >= 4 && val > 0) {
@@ -233,7 +276,7 @@ function LineChart(parent, getData, onLineHover) {
 		.attr('value', "Erase")
 		.attr("style", "z-index: 10;position:relative;left:0px;top:0px;");*/
 
-	var modeData = ["Normal", "Zoom", "Erase"];
+	var modeData = ["Normal", "Zoom", "Erase", "Include"];
 	modeData.forEach(function(item, index) {
 		self.cpDiv.append("input")
 			.attr({
@@ -250,6 +293,23 @@ function LineChart(parent, getData, onLineHover) {
 
 	d3.selectAll("input[name=mode" + self.chartId + "]")
 		.on("change", function() {
+
+			if (self.mode == "Include") {
+				var q = d3.queue();
+				q.defer(function(callback) {
+					setTimeout(function() {
+							self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
+							self.drawLines(self.idContext, self.highlighted, 'id');
+						callback(null); 
+					}, 200);
+					q.await(function(error) {
+						if (error) throw error;
+						//console.log("Goodbye!"); 
+					});
+							
+				});
+			}
+
 			self.mode = d3.select("input[name=mode" + self.chartId + "]:checked").attr("value");
 
 			if (self.mode == "Normal") {
@@ -257,6 +317,22 @@ function LineChart(parent, getData, onLineHover) {
 			}
 			else if (self.mode == "Zoom") {
 				self.canvasLevel3.style("cursor", "zoom-in");
+			}
+			else if (self.mode == "Include") {
+				self.canvasLevel3.style("cursor", "crosshair");
+				var q = d3.queue();
+				q.defer(function(callback) {
+					setTimeout(function() {
+							self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
+							self.drawLines(self.idContext, self.fullDsList, 'id');
+						callback(null); 
+					}, 200);
+					q.await(function(error) {
+						if (error) throw error;
+						//console.log("Goodbye!"); 
+					});
+							
+				});
 			}
 			else {
 				self.canvasLevel3.style("cursor", "crosshair");
