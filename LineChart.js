@@ -1,8 +1,12 @@
 'use strict';
 
+var numLineCharts = 0;
+
 function LineChart(parent, getData, onLineHover) {
 	var self = this;
 	this.parent = parent;
+	this.chartId = numLineCharts;
+	numLineCharts = numLineCharts + 1;
 	this.onLineHover = onLineHover;
     this.highlighted = [];
     this.dragInfo = {};
@@ -67,11 +71,13 @@ function LineChart(parent, getData, onLineHover) {
     canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.height)
-		.attr("style", "z-index: 4;position:absolute;left:0px;top:0px;");
+		.attr("style", "z-index: 4;position:absolute;left:0px;top:0px;cursor: ");
+	this.canvasLevel3 = canvas;
 	this.canvasList.push(canvas);
 	this.level3 = canvas.node().getContext("2d");
+	self.version2 = 0;
 	d3.select(canvas.node()).on("mousemove", function() {
-		if (self.dragInfo.dragging) {
+		if (self.dragInfo.dragging && self.mode == "Zoom") {
 			//console.log('' + self.margin.left + ',' + self.margin.top, + ',' + self.internalWidth + ',' + self.internalHeight);
 			//self.level3.clearRect(0, 0, self.internalWidth,self.internalHeight);
 			self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
@@ -108,12 +114,63 @@ function LineChart(parent, getData, onLineHover) {
     		freq = freq + 1;
     	}
 
+    	var foundIndex = -1;
     	var found = false;
     	for (var f = 0; f < self.highlighted.length; f++) {
     		if (self.highlighted[f].id == (val-1)) {
+    			foundIndex = f;
     			found = true;
     			break;
     		}
+    	}
+
+    	if (self.mode == "Erase") {
+    		if (self.dragInfo.dragging) {
+    			if (found && freq >= 4 && val > 0) {
+
+					for (var f = foundIndex; f < self.highlighted.length; f++) {
+					    if (self.highlighted[f].id == (val-1)) {
+							self.highlighted.splice(f,1);
+							f--;
+					    }
+					}
+			    	
+
+			    	//self.redraw();
+		    		self.redrawContext(self.level2, 1, self.highlighted, 'green');
+		    		self.version2 = self.version2 + 1;
+		    		var dsList = self.highlighted;
+
+					var q = d3.queue();
+					q.defer(function(callback) {
+						var ver = self.version2;
+						setTimeout(function() {
+							if (ver == self.version2) {
+								self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
+								self.drawLines(self.idContext, dsList, 'id');
+								//console.log("cleared");		
+							}
+							callback(null); 
+						}, 200);
+						q.await(function(error) {
+							if (error) throw error;
+							//console.log("Goodbye!"); 
+						});
+								
+					});
+	    		}
+
+	    		
+    		}
+
+
+    		/*self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
+			self.level3.beginPath();
+			self.level3.arc(d3.event.offsetX-self.margin.left,d3.event.offsetY-self.margin.top,5,0,2*Math.PI);
+			self.level3.stroke();
+			self.level3.closePath();*/
+
+    		return;
     	}
 
 
@@ -134,12 +191,14 @@ function LineChart(parent, getData, onLineHover) {
 		self.dragInfo.dragging = true;
 	});
 	d3.select(canvas.node()).on("mouseup", function() {
-		console.log('' + self.dragInfo.startX + '-' + d3.event.offsetX + ',' + self.dragInfo.startY + '-' +  + d3.event.offsetY);
-		self.dragInfo.endX = d3.event.offsetX-self.margin.left;
-		self.dragInfo.endY = d3.event.offsetY-self.margin.top;
 		self.dragInfo.dragging = false;
-		self.resetButton.style("visibility", "visible");
-		self.zoom();
+		if (self.mode == "Zoom") {	
+			console.log('' + self.dragInfo.startX + '-' + d3.event.offsetX + ',' + self.dragInfo.startY + '-' +  + d3.event.offsetY);
+			self.dragInfo.endX = d3.event.offsetX-self.margin.left;
+			self.dragInfo.endY = d3.event.offsetY-self.margin.top;
+			self.resetButton.style("visibility", "visible");
+			self.zoom();
+		}
 	});
 
 
@@ -162,11 +221,62 @@ function LineChart(parent, getData, onLineHover) {
     this.extentX = [];
     this.extentY = [];
 
-    this.resetButton = parent.append("input")
+	this.cpDiv = parent.append("div")
+		.attr("style", "z-index: 10;position:absolute;left:0px;top:0px;");
+    this.resetButton = this.cpDiv.append("input")
 		.attr('type', "button")
 		.attr('value', "Reset")
-		.attr("visibility", "hidden")
-		.attr("style", "z-index: 10;position:absolute;left:0px;top:0px; visibility: hidden;");
+		.attr("style", "z-index: 10;position:relative;left:0px;top:0px; visibility: hidden;");
+
+    /*this.eraseButton = this.cpDiv.append("input")
+		.attr('type', "button")
+		.attr('value', "Erase")
+		.attr("style", "z-index: 10;position:relative;left:0px;top:0px;");*/
+
+	var modeData = ["Normal", "Zoom", "Erase"];
+	modeData.forEach(function(item, index) {
+		self.cpDiv.append("input")
+			.attr({
+        		type: "radio",
+        		class: "shape",
+        		name: "mode" + self.chartId,
+        		value: item
+        	})
+        	.property("checked", index == 0);;
+		self.cpDiv.append("label").text(function (d) { return item + " "; });
+	});
+
+	this.mode = "Normal";
+
+	d3.selectAll("input[name=mode" + self.chartId + "]")
+		.on("change", function() {
+			self.mode = d3.select("input[name=mode" + self.chartId + "]:checked").attr("value");
+
+			if (self.mode == "Normal") {
+				self.canvasLevel3.style("cursor", "default");
+			}
+			else if (self.mode == "Zoom") {
+				self.canvasLevel3.style("cursor", "zoom-in");
+			}
+			else {
+				self.canvasLevel3.style("cursor", "crosshair");
+			}
+		});
+
+
+	/*this.eraseInfo = {erasing: false};
+
+	d3.select(this.eraseButton.node()).on("click", function() {
+		self.eraseInfo.erasing = !self.eraseInfo.erasing;
+		if (self.eraseInfo.erasing) {
+			self.eraseButton.node().value = "Normal";
+			self.canvasLevel3.style("cursor", "crosshair");
+		}
+		else {
+			self.eraseButton.node().value = "Erase";
+			self.canvasLevel3.style("cursor", "default");
+		}
+	});*/
 
 	d3.select(this.resetButton.node()).on("click", function() {
 		self.resetButton.style("visibility", "hidden");
@@ -371,7 +481,7 @@ LineChart.prototype.highlightData = function(query, color) {
 					//console.log("cleared");		
 				}
 				callback(null); 
-			}, 2000);
+			}, 200);
 			q.await(function(error) {
 				if (error) throw error;
 				//console.log("Goodbye!"); 
@@ -537,6 +647,14 @@ LineChart.prototype.reset = function() {
 	this.y2.domain(d3.extent(self.extentY, function(d) { return d; }));
 
 	this.redraw();
+}
+
+LineChart.prototype.redrawContext = function(context, scale, data, color) {
+
+	var self = this;
+
+	context.clearRect(-this.margin.left*scale, -this.margin.top*scale, this.parentRect.width*scale,this.parentRect.height*scale);
+    self.drawLines(context, data, color);
 }
 
 LineChart.prototype.redraw = function() {
