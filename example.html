@@ -64,14 +64,14 @@
 												doneLoading,
 												onSelectionChange,
 												onMouseOverChange);
-			diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover, onRemoveSelection);
+			diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover, onRemoveSelection, onIncludeSelection);
 			//diffractionImage = new LineChart(d3.select('#diffraction2D'), getDiffData, onLineHover);
 			
 			if (dbName == "simresults/Al.design.1000.numbered.csv") {
-				visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover, onRemoveSelection);
+				visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover, onRemoveSelection, onIncludeSelection);
 			}
 			else {
-				visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover, onRemoveSelection);
+				visarChart = new LineChart(d3.select('#visar'), getVisarData, onLineHover, onRemoveSelection, onIncludeSelection);
 			}
 		}
 
@@ -119,6 +119,24 @@
 
 			diffractionChart.highlightData(lastQuery, "green");
 			visarChart.highlightData(lastQuery, "green");
+		}
+
+		function onIncludeSelection(i, event) {
+			var found = false;
+			for (var f = 0; f < lastQuery.length; f++) {
+				if (lastQuery[f] == i) {
+					found = true;
+					break;
+				}
+			}
+
+			if (!found) {
+				lastQuery.push(i);
+
+				diffractionChart.highlightData(lastQuery, "green");
+				visarChart.highlightData(lastQuery, "green");
+			}
+
 		}
 
 		function onMouseOverChange(i, event) {

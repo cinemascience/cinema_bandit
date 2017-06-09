@@ -2,21 +2,24 @@
 
 var numLineCharts = 0;
 
-function LineChart(parent, getData, onLineHover, onRemoveSelection) {
+function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSelection) {
 	var self = this;
 	this.parent = parent;
 	this.chartId = numLineCharts;
 	numLineCharts = numLineCharts + 1;
+	self.version2 = 0;
 	this.onLineHover = onLineHover;
 	this.onRemoveSelection = onRemoveSelection;
+	this.onIncludeSelection = onIncludeSelection;
     this.highlighted = [];
+    this.notHighlighted = [];
     this.dragInfo = {};
     this.queue = d3.queue();
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
 	//	.attr('width','100%')
 	//	.attr('height','100%');
 	this.parentRect = parent.node().getBoundingClientRect();
-	console.log('' + this.parentRect.width + ',' + this.parentRect.height)
+	//console.log('' + this.parentRect.width + ',' + this.parentRect.height)
 	var canvas = parent.append("canvas")
 		.attr('width', this.parentRect.width)
 		.attr('height', this.parentRect.height)
@@ -76,7 +79,7 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
 	this.canvasLevel3 = canvas;
 	this.canvasList.push(canvas);
 	this.level3 = canvas.node().getContext("2d");
-	self.version2 = 0;
+	self.version = 0;
 	d3.select(canvas.node()).on("mousemove", function() {
 		if (self.dragInfo.dragging && self.mode == "Zoom") {
 			//console.log('' + self.margin.left + ',' + self.margin.top, + ',' + self.internalWidth + ',' + self.internalHeight);
@@ -128,7 +131,7 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
     	if (self.mode == "Erase") {
     		if (self.dragInfo.dragging) {
     			if (found && freq >= 4 && val > 0) {
-    				onRemoveSelection(self.highlighted[foundIndex].id)
+    				self.onRemoveSelection(self.highlighted[foundIndex].id, d3.event);
 					/*for (var f = foundIndex; f < self.highlighted.length; f++) {
 					    if (self.highlighted[f].id == (val-1)) {
 							self.highlighted.splice(f,1);
@@ -169,8 +172,8 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
     	if (self.mode == "Include") {
     		if (self.dragInfo.dragging) {
     			if (freq >= 4 && val > 0) {
-
-					self.highlighted.push.apply(self.highlighted, self.loadedData[val-1]);
+    				self.onIncludeSelection(val-1, d3.event)
+					/*self.highlighted.push.apply(self.highlighted, self.loadedData[val-1]);
 
 			    	//self.redraw();
 		    		self.redrawContext(self.level2, 1, self.highlighted, 'green');
@@ -193,7 +196,7 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
 							//console.log("Goodbye!"); 
 						});
 								
-					});
+					});*/
 	    		}
 
 	    		
@@ -229,7 +232,7 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
 	d3.select(canvas.node()).on("mouseup", function() {
 		self.dragInfo.dragging = false;
 		if (self.mode == "Zoom") {	
-			console.log('' + self.dragInfo.startX + '-' + d3.event.offsetX + ',' + self.dragInfo.startY + '-' +  + d3.event.offsetY);
+			//console.log('' + self.dragInfo.startX + '-' + d3.event.offsetX + ',' + self.dragInfo.startY + '-' +  + d3.event.offsetY);
 			self.dragInfo.endX = d3.event.offsetX-self.margin.left;
 			self.dragInfo.endY = d3.event.offsetY-self.margin.top;
 			self.resetButton.style("visibility", "visible");
@@ -287,23 +290,13 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
 	d3.selectAll("input[name=mode" + self.chartId + "]")
 		.on("change", function() {
 
-			if (self.mode == "Include") {
-				var q = d3.queue();
-				q.defer(function(callback) {
-					setTimeout(function() {
-							self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
-							self.drawLines(self.idContext, self.highlighted, 'id');
-						callback(null); 
-					}, 200);
-					q.await(function(error) {
-						if (error) throw error;
-						//console.log("Goodbye!"); 
-					});
-							
-				});
-			}
+			var previousMode = self.mode;
 
 			self.mode = d3.select("input[name=mode" + self.chartId + "]:checked").attr("value");
+
+			if (previousMode == "Include") {
+				self.drawIdData();
+			}
 
 			if (self.mode == "Normal") {
 				self.canvasLevel3.style("cursor", "default");
@@ -313,19 +306,7 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection) {
 			}
 			else if (self.mode == "Include") {
 				self.canvasLevel3.style("cursor", "crosshair");
-				var q = d3.queue();
-				q.defer(function(callback) {
-					setTimeout(function() {
-							self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
-							self.drawLines(self.idContext, self.fullDsList, 'id');
-						callback(null); 
-					}, 200);
-					q.await(function(error) {
-						if (error) throw error;
-						//console.log("Goodbye!"); 
-					});
-							
-				});
+				self.drawIdData();
 			}
 			else {
 				self.canvasLevel3.style("cursor", "crosshair");
@@ -528,35 +509,17 @@ LineChart.prototype.highlightData = function(query, color) {
 	self.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
 	//this.drawLines(self.level1, self.fullDsList, fallbackColor);
 
-	var dsList = [];
+	self.highlighted = [];
 	query.forEach(function(item, index) {
-		dsList.push.apply(dsList, self.loadedData[item]);
+		self.highlighted.push.apply(self.highlighted, self.loadedData[item]);
 	});
 
-	self.drawLines(self.level2, dsList, color);
+	self.drawLines(self.level2, self.highlighted, color);
 
+	self.drawIdData();
 		//self.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
 
-	self.version = self.version + 1;
 
-		var q = d3.queue();
-		q.defer(function(callback) {
-			var ver = self.version;
-			setTimeout(function() {
-				if (ver == self.version) {
-					//console.log('' + ver + ': ' + self.version);
-					self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
-					self.drawLines(self.idContext, dsList, 'id');
-					//console.log("cleared");		
-				}
-				callback(null); 
-			}, 200);
-			q.await(function(error) {
-				if (error) throw error;
-				//console.log("Goodbye!"); 
-			});
-					
-		});
 	/*var q = d3.queue();
 	q.defer(function(callback) {
 			self.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
@@ -569,7 +532,55 @@ LineChart.prototype.highlightData = function(query, color) {
 			});
 	});*/
 	//this.drawLines(self.idContext, dsList, 'id');
-	this.highlighted = dsList;
+}
+
+LineChart.prototype.drawIdData = function() {
+	var self = this;
+
+	var dsList = [];
+	if (self.mode == "Include") {
+
+		var idMap = {};
+		self.highlighted.forEach(function(item, index) {
+			idMap[item.id] = true;
+		});
+
+		self.notHighlighted = [];
+		for (var key in self.loadedData) {
+		    if (self.loadedData.hasOwnProperty(key)) {
+		    	if (!idMap[key]) {
+		    		self.notHighlighted.push.apply(self.notHighlighted, self.loadedData[key]);
+		    	}
+		    }
+		}
+		dsList = self.notHighlighted;
+	}
+	else {
+		//console.log("highlighted");
+		dsList = self.highlighted;
+	}
+
+	self.version2 = self.version2 + 1;
+	//console.log(self.version2);
+
+		var q = d3.queue();
+		q.defer(function(callback) {
+			var ver = self.version2;
+			//console.log('' + ver + ': ' + self.version2);
+			setTimeout(function() {
+				if (ver == self.version2) {
+					//console.log('' + ver + ': ' + self.version2);
+					self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
+					self.drawLines(self.idContext, dsList, 'id');
+					//console.log("cleared");		
+				}
+				callback(null); 
+			}, 200);
+			q.await(function(error) {
+				if (error) throw error;
+			});
+					
+		});
 }
 
 LineChart.prototype.selectData = function(query) {
