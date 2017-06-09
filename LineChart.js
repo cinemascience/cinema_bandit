@@ -2,12 +2,13 @@
 
 var numLineCharts = 0;
 
-function LineChart(parent, getData, onLineHover) {
+function LineChart(parent, getData, onLineHover, onRemoveSelection) {
 	var self = this;
 	this.parent = parent;
 	this.chartId = numLineCharts;
 	numLineCharts = numLineCharts + 1;
 	this.onLineHover = onLineHover;
+	this.onRemoveSelection = onRemoveSelection;
     this.highlighted = [];
     this.dragInfo = {};
     this.queue = d3.queue();
@@ -127,8 +128,8 @@ function LineChart(parent, getData, onLineHover) {
     	if (self.mode == "Erase") {
     		if (self.dragInfo.dragging) {
     			if (found && freq >= 4 && val > 0) {
-
-					for (var f = foundIndex; f < self.highlighted.length; f++) {
+    				onRemoveSelection(self.highlighted[foundIndex].id)
+					/*for (var f = foundIndex; f < self.highlighted.length; f++) {
 					    if (self.highlighted[f].id == (val-1)) {
 							self.highlighted.splice(f,1);
 							f--;
@@ -154,21 +155,13 @@ function LineChart(parent, getData, onLineHover) {
 						}, 200);
 						q.await(function(error) {
 							if (error) throw error;
-							//console.log("Goodbye!"); 
 						});
 								
-					});
+					});*/
 	    		}
 
 	    		
     		}
-
-
-    		/*self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
-			self.level3.beginPath();
-			self.level3.arc(d3.event.offsetX-self.margin.left,d3.event.offsetY-self.margin.top,5,0,2*Math.PI);
-			self.level3.stroke();
-			self.level3.closePath();*/
 
     		return;
     	}
