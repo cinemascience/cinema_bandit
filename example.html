@@ -24,7 +24,6 @@
 		<div id="svgContainer"></div>
 	</div>
 	<div id="resultsArea" style="margin-left: auto; margin-right: auto;" width="100%">
-		<!--canvas width="600" height="500" id="diffCanvas"></canvas-->
 		<div id="visar" class="lineChart"></div>
 		<div id="diffraction2D" class="imageChart"><img id="diffractionImage1" width="50%" height="100%" src="Ti-data/Ti-XRD-composite-images/output.jpg"><img id="diffractionImage2" width="50%" height="100%" src="Ti-data/Ti-XRD-composite-images/output.jpg"><!--img id="diffractionImage3" width="100%" height="50%" src="Ti-data/Ti-XRD-composite-images/output.jpg"--></div>
 		<div id="diffraction1D" class="lineChart"></div>
@@ -38,7 +37,6 @@
 		var diffractionChart;
 		var visarChart;
 		var alwaysHighlighted = [];
-		//var diffractionImage;
 		load();
 
 		function load() {
@@ -54,18 +52,10 @@
 
 			chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
 												dbName,
-												//'GF-HP/GF-HP.csv',
-												//'GF-LP/GF-LP.csv',
-												//'LANLHigh-O/LANLHigh-O.csv',
-												//'LANLLow-O/LANLLow-O.csv',
-												//'LANLMed-O/LANLMed-O.csv',
-												//'simresults/Al.design.3.numbered.csv',
-												//'simresults/Al.design.1000.numbered.csv',
 												doneLoading,
 												onSelectionChange,
 												onMouseOverChange);
 			diffractionChart = new LineChart(d3.select('#diffraction1D'), getDiffData, onLineHover, onRemoveSelection, onIncludeSelection);
-			//diffractionImage = new LineChart(d3.select('#diffraction2D'), getDiffData, onLineHover);
 			
 			if (dbName == "simresults/Al.design.1000.numbered.csv") {
 				visarChart = new LineChart(d3.select('#visar'), getVisarData2, onLineHover, onRemoveSelection, onIncludeSelection);
@@ -82,7 +72,6 @@
 
 			// Initialize lines
 			var resultIndices = Array.apply(null, Array(chart.results.length)).map(function (_, i) {return i;});
-			//diffractionChart.drawData(resultIndices, true, "lightgrey");
 			diffractionChart.loadData(resultIndices);
 			visarChart.loadData(resultIndices);
 		}
@@ -92,13 +81,10 @@
 				chart.updateSize();
 				diffractionChart.updateSize();
 				visarChart.updateSize();
-				//diffractionImage.updateSize();
 			}
 		};
 
 		function onSelectionChange(query) {
-			//d3.select('#selectionReadout').text("Selection: " + query);
-			//console.log("onSelectionChange " + loaded + ' ' + query.length);
 			diffractionChart.highlightData(query, "green");
 			visarChart.highlightData(query, "green");
 			lastQuery = query;
@@ -160,14 +146,10 @@
 				}
 				d3.select('#diffractionImage1').attr("src", fileName);
 				d3.select('#diffractionImage2').attr("src", fileName2);
-				//console.log(fileName);
 			}
 			else {
 				diffractionChart.selectData(alwaysHighlighted);
 				visarChart.selectData(alwaysHighlighted);
-				//d3.select('#diffractionImage1').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
-				//d3.select('#diffractionImage2').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
-				//d3.select('#diffraction2D').attr("src", "");
 			}
 		}
 

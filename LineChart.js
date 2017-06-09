@@ -1,8 +1,19 @@
 'use strict';
 
+// Used to uniquely identify different charts on the same page
 var numLineCharts = 0;
 
 function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSelection) {
+	/* Here is the overview of the various drawing contexts:
+		* level0: draws the white background and the axis
+		* level1: draws the grey values for all curves
+		* level2: draws the highlighted (selected) curves in green
+		* level3: draws the line that is hovered over.  All the mouse interaction is done at this level.
+		* idContext: draws a 2x larger highlighted (selected) curves encoding the id in the rgb color.
+					This is used for identifying which curve the mouse is over.  When the include mode
+					is selected, the inverse (lines which are not highlighted) are drawn.
+	*/
+
 	var self = this;
 	this.parent = parent;
 	this.chartId = numLineCharts;
@@ -16,10 +27,9 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
     this.dragInfo = {};
     this.queue = d3.queue();
 	this.parent.attr("style", "position:relative;left:0px;top:0px;");
-	//	.attr('width','100%')
-	//	.attr('height','100%');
 	this.parentRect = parent.node().getBoundingClientRect();
-	//console.log('' + this.parentRect.width + ',' + this.parentRect.height)
+
+	// Level 0
 	var canvas = parent.append("canvas")
 		.attr('width', this.parentRect.width)
 		.attr('height', this.parentRect.height)
@@ -36,6 +46,8 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 	this.level0.fillStyle = "white";//"#9ea7b8";
 	this.level0.translate(this.margin.left, this.margin.top);
     this.level0.fillRect(0,0,this.internalWidth,this.internalHeight);
+
+    // IdContext
     canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width*2)
 		.attr("height", this.canvasRect.height*2)
@@ -48,6 +60,8 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 	this.idContext.translate(this.margin.left*2, this.margin.top*2);
 	this.idContext.lineWidth=3;
     this.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
+
+    // Level 1
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.height)
@@ -59,6 +73,8 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 	this.level1.globalCompositeOperation = "difference";
 	this.level1.translate(this.margin.left, this.margin.top);
     this.level1.clearRect(0, 0, this.internalWidth,this.internalHeight);
+ 
+    // Level 2
 	canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.height)
@@ -72,6 +88,8 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 	this.level2.globalCompositeOperation = "difference";
 	this.level2.translate(this.margin.left, this.margin.top);
     this.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
+
+    // Level 3
     canvas = parent.append("canvas")
 		.attr("width", this.canvasRect.width)
 		.attr("height", this.canvasRect.height)
@@ -93,15 +111,12 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 			return;
 		}
 
-    	//console.log('' + d3.event.offsetX + ',' + d3.event.offsetY);
     	var imageData = self.idContext.getImageData(d3.event.offsetX*2-1, d3.event.offsetY*2-1, 3, 3).data;
-    	//console.log(imageData);
     	var vals = []
     	for (var f = 0; f < imageData.length/4; f++) {
     		vals.push(imageData[f*4] + imageData[f*4 + 1]*256 + imageData[f*4 + 2]*256*256);
     	}
     	vals.sort();
-    	//console.log(vals);
 
     	var val = -1;
     	var freq = 0;
@@ -132,38 +147,7 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
     		if (self.dragInfo.dragging) {
     			if (found && freq >= 4 && val > 0) {
     				self.onRemoveSelection(self.highlighted[foundIndex].id, d3.event);
-					/*for (var f = foundIndex; f < self.highlighted.length; f++) {
-					    if (self.highlighted[f].id == (val-1)) {
-							self.highlighted.splice(f,1);
-							f--;
-					    }
-					}
-			    	
-
-			    	//self.redraw();
-		    		self.redrawContext(self.level2, 1, self.highlighted, 'green');
-		    		self.version2 = self.version2 + 1;
-		    		var dsList = self.highlighted;
-
-					var q = d3.queue();
-					q.defer(function(callback) {
-						var ver = self.version2;
-						setTimeout(function() {
-							if (ver == self.version2) {
-								self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
-								self.drawLines(self.idContext, dsList, 'id');
-								//console.log("cleared");		
-							}
-							callback(null); 
-						}, 200);
-						q.await(function(error) {
-							if (error) throw error;
-						});
-								
-					});*/
 	    		}
-
-	    		
     		}
 
     		return;
@@ -173,55 +157,19 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
     		if (self.dragInfo.dragging) {
     			if (freq >= 4 && val > 0) {
     				self.onIncludeSelection(val-1, d3.event)
-					/*self.highlighted.push.apply(self.highlighted, self.loadedData[val-1]);
-
-			    	//self.redraw();
-		    		self.redrawContext(self.level2, 1, self.highlighted, 'green');
-		    		self.version2 = self.version2 + 1;
-		    		var dsList = self.highlighted;
-
-					var q = d3.queue();
-					q.defer(function(callback) {
-						var ver = self.version2;
-						setTimeout(function() {
-							if (ver == self.version2) {
-								self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
-								self.drawLines(self.idContext, self.fullDsList, 'id');
-								//console.log("cleared");		
-							}
-							callback(null); 
-						}, 200);
-						q.await(function(error) {
-							if (error) throw error;
-							//console.log("Goodbye!"); 
-						});
-								
-					});*/
 	    		}
 
 	    		
     		}
 
-
-    		/*self.level3.clearRect(-self.margin.left, -self.margin.top, self.parentRect.width, self.parentRect.height);
-			self.level3.beginPath();
-			self.level3.arc(d3.event.offsetX-self.margin.left,d3.event.offsetY-self.margin.top,5,0,2*Math.PI);
-			self.level3.stroke();
-			self.level3.closePath();*/
-
     		return;
     	}
 
-
-    	//console.log('' + val);
     	if (found && freq >= 4 && val > 0) {
-    		//console.log('select' + (val-1));
-    		//self.selectData([val-1]);
     		self.onLineHover(val-1, d3.event);
     	}
     	else {
     		self.onLineHover(null, d3.event);
-    		//self.selectData([]);
     	}
       });
 	d3.select(canvas.node()).on("mousedown", function() {
@@ -232,7 +180,6 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 	d3.select(canvas.node()).on("mouseup", function() {
 		self.dragInfo.dragging = false;
 		if (self.mode == "Zoom") {	
-			//console.log('' + self.dragInfo.startX + '-' + d3.event.offsetX + ',' + self.dragInfo.startY + '-' +  + d3.event.offsetY);
 			self.dragInfo.endX = d3.event.offsetX-self.margin.left;
 			self.dragInfo.endY = d3.event.offsetY-self.margin.top;
 			self.resetButton.style("visibility", "visible");
@@ -240,11 +187,12 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 		}
 	});
 
-
 	this.level3.fillStyle = "white";
 	this.level3.translate(this.margin.left, this.margin.top);
     this.level3.clearRect(0, 0, this.internalWidth,this.internalHeight);
     this.level3.lineWidth=3;
+
+    // Chart data
     this.getData = getData;
     this.x = d3.scale.linear().range([0, this.internalWidth]);
     this.y = d3.scale.linear().range([this.internalHeight, 0]);
@@ -252,7 +200,6 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
     this.y2 = d3.scale.linear().range([this.internalHeight*2, 0]);
     this.fullDsList = [];
     this.loadedData = {};
-    // all = 0; highlighted = 1;
     this.drawMode = 0;
     this.version = 0;
     this.dataLoaded = false;
@@ -266,11 +213,6 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 		.attr('type', "button")
 		.attr('value', "Reset")
 		.attr("style", "z-index: 10;position:relative;left:0px;top:0px; visibility: hidden;");
-
-    /*this.eraseButton = this.cpDiv.append("input")
-		.attr('type', "button")
-		.attr('value', "Erase")
-		.attr("style", "z-index: 10;position:relative;left:0px;top:0px;");*/
 
 	var modeData = ["Normal", "Zoom", "Erase", "Include"];
 	modeData.forEach(function(item, index) {
@@ -313,21 +255,6 @@ function LineChart(parent, getData, onLineHover, onRemoveSelection, onIncludeSel
 			}
 		});
 
-
-	/*this.eraseInfo = {erasing: false};
-
-	d3.select(this.eraseButton.node()).on("click", function() {
-		self.eraseInfo.erasing = !self.eraseInfo.erasing;
-		if (self.eraseInfo.erasing) {
-			self.eraseButton.node().value = "Normal";
-			self.canvasLevel3.style("cursor", "crosshair");
-		}
-		else {
-			self.eraseButton.node().value = "Erase";
-			self.canvasLevel3.style("cursor", "default");
-		}
-	});*/
-
 	d3.select(this.resetButton.node()).on("click", function() {
 		self.resetButton.style("visibility", "hidden");
 		self.reset();
@@ -342,6 +269,8 @@ function replaceAll(str, find, replace) {
   return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
+// Load data (this should probably be moved out into its own javascript file for simplicity and flexibility
+// of the LineChart code)
 LineChart.prototype.loadData = function(query) {
 	var self = this;
 	var dataSetsProcessed = 0;
@@ -358,7 +287,7 @@ LineChart.prototype.loadData = function(query) {
 	    	d3.text(dataSet.file, function(text) {
 
 	    		if (text) {
-	    			// /*  correct for white space delemited
+	    			// correct for white space delemited
 	    			if (dataSet.delimiter == " ") {
 	    				var lines = text.split('\n');
 	    				text = '';
@@ -372,15 +301,9 @@ LineChart.prototype.loadData = function(query) {
 		    						text = text + "\n" + lines[index].trim();
 		    					}
 		    				}
-		    				//lines[index] = lines[index].trim();
 		    			});
-		    			//text = lines.join('\n');//.replace(" ","\t");
 		    			text = replaceAll(text,"  ","\t");
 	    			}
-	    			
-
-	    			//console.log(text);
-	    			//	*/
 
 	    			var rows = d3.tsv.parseRows(text).map(function(row) {
 						return row.map(function(value) {
@@ -444,17 +367,7 @@ LineChart.prototype.loadData = function(query) {
 	});
 }
 
-LineChart.prototype.setDrawMode = function(drawMode) {
-	this.drawMode = drawMode;
-	this.level1.clearRect(0,0,this.internalWidth,this.internalHeight);
-	this.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
-	this.level3.clearRect(0, 0, this.internalWidth,this.internalHeight);
-	if (drawMode == 0) {
-		self.drawLines(self.level1, fullDsList, "lightgrey");
-	}
-	self.drawLines(self.level2, highlighted, "lightgreen");
-}
-
+// This function draws lines for the data sets on the selected context (can specify a color)
 LineChart.prototype.drawLines = function(context, dsList, color) {
 	var self = this;
 	dsList.forEach(function(item, index) {
@@ -464,7 +377,6 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 				var b = Math.floor(id / 256 / 256);
 				var g = Math.floor((id - b*256*256) / 256);
 				var r = (id - b*256*256 - g*256);
-				//context.strokeStyle = 'rgb('+r+',' + g + ',' + b + ')';//color;
 				context.strokeStyle = 'rgb('+r+','+g+','+b+')';//color;
 			}
 			else {
@@ -497,6 +409,7 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 	});
 }
 
+// This function draws the higlighted values on context 2 and updates the idContext
 LineChart.prototype.highlightData = function(query, color) {
 	var self = this;
 
@@ -504,10 +417,7 @@ LineChart.prototype.highlightData = function(query, color) {
 		return;
 	}
 
-	//self.level1.fillRect(0,0,self.internalWidth,self.internalHeight);
-	//self.level2.fillRect(0,0,self.internalWidth,self.internalHeight);
 	self.level2.clearRect(0, 0, this.internalWidth,this.internalHeight);
-	//this.drawLines(self.level1, self.fullDsList, fallbackColor);
 
 	self.highlighted = [];
 	query.forEach(function(item, index) {
@@ -517,23 +427,10 @@ LineChart.prototype.highlightData = function(query, color) {
 	self.drawLines(self.level2, self.highlighted, color);
 
 	self.drawIdData();
-		//self.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
-
-
-	/*var q = d3.queue();
-	q.defer(function(callback) {
-			self.idContext.clearRect(0, 0, this.internalWidth*2,this.internalHeight*2);
-			self.drawLines(self.idContext, dsList, 'id');
-			console.log("cleared");
-			callback(null); 
-			q.await(function(error) {
-				if (error) throw error;
-				console.log("Goodbye!"); 
-			});
-	});*/
-	//this.drawLines(self.idContext, dsList, 'id');
 }
 
+// This function draws the Id Data (there is a slight delay in updating the id context
+// since it takes longer to render, but the user rarely will notice)
 LineChart.prototype.drawIdData = function() {
 	var self = this;
 
@@ -556,23 +453,18 @@ LineChart.prototype.drawIdData = function() {
 		dsList = self.notHighlighted;
 	}
 	else {
-		//console.log("highlighted");
 		dsList = self.highlighted;
 	}
 
 	self.version2 = self.version2 + 1;
-	//console.log(self.version2);
 
 		var q = d3.queue();
 		q.defer(function(callback) {
 			var ver = self.version2;
-			//console.log('' + ver + ': ' + self.version2);
 			setTimeout(function() {
 				if (ver == self.version2) {
-					//console.log('' + ver + ': ' + self.version2);
 					self.idContext.clearRect(0, 0, self.internalWidth*2,self.internalHeight*2);
 					self.drawLines(self.idContext, dsList, 'id');
-					//console.log("cleared");		
 				}
 				callback(null); 
 			}, 200);
@@ -583,6 +475,8 @@ LineChart.prototype.drawIdData = function() {
 		});
 }
 
+// This draws the highlight for hovering over or specifying a selection (it usually uses the color specified
+// by the data set itself)
 LineChart.prototype.selectData = function(query) {
 	var self = this;
 
@@ -596,6 +490,7 @@ LineChart.prototype.selectData = function(query) {
 	this.drawLines(self.level3, dsList);
 }
 
+// This draws the xAxis
 LineChart.prototype.xAxis = function() {
 	var self = this;
 	  var tickCount = 10,
@@ -618,6 +513,7 @@ LineChart.prototype.xAxis = function() {
 	  });
 }
 
+// This draws the yAxis
 LineChart.prototype.yAxis = function() {
 	var self = this;
   var tickCount = 10,
@@ -653,10 +549,10 @@ LineChart.prototype.yAxis = function() {
   self.level0.textAlign = "right";
   self.level0.textBaseline = "top";
   self.level0.font = "bold 10px sans-serif";
-  //context.fillText("Price (US$)", -10, 10);
   self.level0.restore();
 }
 
+// This updates the size of the charts
 LineChart.prototype.updateSize = function() {
 	var self = this;
 
@@ -680,7 +576,6 @@ LineChart.prototype.updateSize = function() {
 	this.canvasList.forEach(function(item, index) {
 		item.attr('width', self.parentRect.width)
 			.attr('height', self.parentRect.height)
-			//.attr("style", "z-index: "+ index +";position:absolute;left:0px;top:0px");
 	});
 	this.idCanvas.attr('width', this.parentRect.width*2)
 			.attr('height', this.parentRect.height*2);
@@ -704,6 +599,7 @@ LineChart.prototype.updateSize = function() {
 	this.redraw();
 }
 
+// This adjusts the chard for zooming and redraws
 LineChart.prototype.zoom = function() {
 	var self = this;
 
@@ -718,6 +614,7 @@ LineChart.prototype.zoom = function() {
 	this.redraw();
 }
 
+// This resets the zoom to default
 LineChart.prototype.reset = function() {
 	var self = this;
 
@@ -729,6 +626,7 @@ LineChart.prototype.reset = function() {
 	this.redraw();
 }
 
+// This redraws a specific context
 LineChart.prototype.redrawContext = function(context, scale, data, color) {
 
 	var self = this;
@@ -737,6 +635,7 @@ LineChart.prototype.redrawContext = function(context, scale, data, color) {
     self.drawLines(context, data, color);
 }
 
+// This redraws everything and sets the clipping planes
 LineChart.prototype.redraw = function() {
 	var self = this;
 
@@ -771,7 +670,7 @@ LineChart.prototype.redraw = function() {
 	this.level3.lineWidth=3;
 
     self.drawLines(self.level1, self.fullDsList, "lightgrey");
-	self.drawLines(self.idContext, self.highlighted, "id");
+	self.drawLines(self.idContext, self.mode == "Include" ? self.notHighlighted : self.highlighted, "id");
 	self.drawLines(self.level2, self.highlighted, "green");
 	self.xAxis();
 	self.yAxis();
