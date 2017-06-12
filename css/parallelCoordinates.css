@@ -1,0 +1,48 @@
+.pCoordChart {
+	font: 10px sans-serif;
+}
+
+.pCoordChart path{
+	fill: none;
+	stroke-width: 2px;
+	stroke: palegreen;
+	stroke-opacity: 0.3;
+
+	vector-effect: non-scaling-stroke;
+}
+.pCoordChart path[mode="inactive"] {
+	display: none;
+}
+
+.pCoordChart .highlightPath { 
+	pointer-events: none;
+	stroke-width: 4px;
+	stroke: lightskyblue;
+	stroke-opacity: 1;
+}
+
+.pCoordChart .overlayPath {
+	pointer-events: none;
+	stroke-dasharray: 20, 10;
+	stroke: crimson;
+	stroke-opacity: 1;
+}
+
+.pCoordChart .brush .extent {
+	fill-opacity: .3;
+	stroke: #fff;
+	shape-rendering: crispEdges;
+}
+
+.pCoordChart .axis line,
+.pCoordChart .axis path {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+.pCoordChart .axis text {
+	fill: black;
+	text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+	cursor: move;
+}
