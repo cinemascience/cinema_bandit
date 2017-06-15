@@ -31,7 +31,7 @@ body {
 
 #resizeBar {
 	cursor: ns-resize;
-	height: 3px;
+	height: 6px;
 	background-color: #163463;
 }
 #resizeBar:hover {
@@ -127,6 +127,7 @@ body {
 	text-shadow: 1px 1px 2px black;
 }
 .sidebarThird .socket {
+	text-align: initial;
 	position: absolute;
 	top: 30px;
 	right: 5px;
@@ -136,6 +137,9 @@ body {
 	background-color: #1a2b44;
 	box-shadow: inset 0px 0px 10px black;
 	border-radius: 5px;
+}
+.sidebarThird .socket .lineChart .axis text {
+	font-size: 5px;
 }
 
 

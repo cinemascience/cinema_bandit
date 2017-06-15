@@ -63,39 +63,17 @@
 	</div>
 
 	<script>
-		var loaded = false;
+		var chartLoaded = false;
 		var chart;
 		var diffractionChart;
 		var visarChart;
+
 		var alwaysHighlighted = [];
-		load();
 
-		updateBottomHalf();
-
-		function load() {
-
-			$('#svgContainer').html('');
-			$('#visarContainer').html('');
-			$('#diffractionContainer').html('');
-			$('#diffractionImage1').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
-			$('#diffractionImage2').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
-
-			dbName = d3.select('#database').node().value;
-			console.log(dbName);
-
-			chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
-												dbName,
-												[],
-												doneLoading);
-			diffractionChart = new LineChart(d3.select('#diffractionContainer'), getDiffData, onLineHover, onRemoveSelection, onIncludeSelection);
-			
-			if (dbName == "simresults/Al.design.1000.numbered.csv") {
-				visarChart = new LineChart(d3.select('#visarContainer'), getVisarData2, onLineHover, onRemoveSelection, onIncludeSelection);
-			}
-			else {
-				visarChart = new LineChart(d3.select('#visarContainer'), getVisarData, onLineHover, onRemoveSelection, onIncludeSelection);
-			}
-		}
+		$(document).ready(function() {
+			updateBottomHalf();
+			load();
+		});
 
 		var lastQuery = [];
 
@@ -146,18 +124,55 @@
 					else if (socketContents.attr('id') == "diffractionContainer")
 						diffractionChart.updateSize();
 				}
-			})
+			});
 
-		window.onresize = function(){
-			if (loaded) {
+		//https://stackoverflow.com/a/5926068
+		var rtime;
+		var timeout = false;
+		var delta = 200;
+		$(window).resize(function() {
+			rtime = new Date();
+			if (timeout === false) {
+				timeout = true;
+				setTimeout(resizeend, delta);
+			}
+		});
+
+		function resizeend() {
+			if (new Date() - rtime < delta) {
+				setTimeout(resizeend, delta);
+			} else {
+				timeout = false;
 				chart.updateSize();
 				diffractionChart.updateSize();
 				visarChart.updateSize();
 			}
-		};
+		}
+
+		function load() {
+			$('#svgContainer').html('');
+			$('#visarContainer').html('');
+			$('#diffractionContainer').html('');
+			$('#diffractionImage1').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
+			$('#diffractionImage2').attr("src", "Ti-data/Ti-XRD-composite-images/output.jpg");
+
+			dbName = d3.select('#database').node().value;
+			console.log(dbName);
+
+			chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),dbName,[],doneLoading);
+
+			diffractionChart = new LineChart(d3.select('#diffractionContainer'), getDiffData);
+			
+			if (dbName == "simresults/Al.design.1000.numbered.csv") {
+				visarChart = new LineChart(d3.select('#visarContainer'), getVisarData2);
+			}
+			else {
+				visarChart = new LineChart(d3.select('#visarContainer'), getVisarData);
+			}
+		}
 
 		function doneLoading() {
-			loaded = true;
+			chartLoaded = true;
 
 			//Add listeners for chart
 			chart.dispatch.on('selectionchange', onSelectionChange);
@@ -165,25 +180,26 @@
 
 			// Initialize lines
 			var resultIndices = Array.apply(null, Array(chart.results.length)).map(function (_, i) {return i;});
-			diffractionChart.loadData(resultIndices);
-			visarChart.loadData(resultIndices);
+			diffractionChart.loadData(resultIndices, function() {
+				diffractionChart.updateSize();
+			});
+			visarChart.loadData(resultIndices, function() {
+				visarChart.updateSize();
+			});
 
-			diffractionChart.updateSize();
-			visarChart.updateSize();
+			diffractionChart.dispatch.on("mouseover", onMouseOverChange);
+			visarChart.dispatch.on("mouseover", onMouseOverChange);
 		}
 
 		function onSelectionChange(query) {
-			diffractionChart.highlightData(query, "green");
-			visarChart.highlightData(query, "green");
 			lastQuery = query;
+			if (visarChart.dataLoaded)
+				visarChart.setSelection(query);
+			if (diffractionChart.dataLoaded)
+				diffractionChart.setSelection(query);
 		}
 
-		function onLineHover(i, event) {
-			chart.setHighlight(i);
-			onMouseOverChange(i, event);
-		}
-
-		function onRemoveSelection(i, event) {
+		/*function onRemoveSelection(i, event) {
 			for (var f = 0; f < lastQuery.length; f++) {
 				if (lastQuery[f] == i) {
 					lastQuery.splice(f, 1);
@@ -193,7 +209,7 @@
 
 			diffractionChart.highlightData(lastQuery, "green");
 			visarChart.highlightData(lastQuery, "green");
-		}
+		}*/
 
 		function onIncludeSelection(i, event) {
 			var found = false;
@@ -214,10 +230,14 @@
 		}
 
 		function onMouseOverChange(i, event) {
+			if (this !== chart && chartLoaded) {
+				chart.setHighlight(i);
+			}
+
 			if (i != null) {
 				var id = chart.results[i].run;
-				diffractionChart.selectData([i].concat(alwaysHighlighted));
-				visarChart.selectData([i].concat(alwaysHighlighted));
+				diffractionChart.setHighlight([i].concat(alwaysHighlighted));
+				visarChart.setHighlight([i].concat(alwaysHighlighted));
 				if (dbName == "simresults/Al.design.1000.numbered.csv") {
 					fileName = "Ti-data/Ti-XRD-composite-images/output.jpg";
 					fileName2 = "Ti-data/Ti-XRD-composite-images/output.jpg";
@@ -236,8 +256,8 @@
 				d3.select('#diffractionImage2').attr("src", fileName2);
 			}
 			else {
-				diffractionChart.selectData(alwaysHighlighted);
-				visarChart.selectData(alwaysHighlighted);
+				diffractionChart.setHighlight(alwaysHighlighted);
+				visarChart.setHighlight(alwaysHighlighted);
 			}
 		}
 
@@ -249,7 +269,7 @@
 		function pad(num, size){ return ('000000000' + num).substr(-size); }
 		
 		function getDiffData(i) {
-			if (loaded) {
+			if (chartLoaded) {
 				var id = chart.results[i].run;
 				return [
 					{file: "_1DSpectra/r" + pad(id,4) + "-e00000001-spectrum.txt", color: "blue", columnX: -1, columnY: -1},
@@ -260,7 +280,7 @@
 		}
 
 		function getVisarData(i) {
-			if (loaded) {
+			if (chartLoaded) {
 				var id = chart.results[i].run;
 				return [
 					{file: "visar/r" + pad(id,3) + "-visar.txt", color: "blue", columnX: -1, columnY: 0},
@@ -271,7 +291,7 @@
 		}
 
 		function getVisarData2(i) {
-			if (loaded) {
+			if (chartLoaded) {
 				var id = i+1;
 				var experiment = chart.results[i].Experiment;
 				if (experiment == 1) {

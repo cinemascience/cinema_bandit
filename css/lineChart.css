@@ -1,0 +1,33 @@
+.lineChart .canvasStack {
+	/*Position/Sizing is handled in code*/
+	background-color: white;
+}
+
+.lineChart .canvasStack canvas {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+.lineChart .canvasStack #idCanvas {
+	width: initial;
+	height: initial;
+	display: none;
+}
+
+.lineChart .axisWrapper .axis {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+.lineChart .axis line,
+.lineChart .axis path {
+	fill: none;
+	stroke: white;
+	shape-rendering: crispEdges;
+}
+
+.lineChart .axis text {
+	fill: white;
+	text-shadow: 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+}
