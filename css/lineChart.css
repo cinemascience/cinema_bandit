@@ -2,6 +2,13 @@
 	/*Position/Sizing is handled in code*/
 	background-color: white;
 }
+.lineChart .canvasStack:active {
+	cursor: move;
+}
+
+.lineChart .eraseIncludeMask {
+	cursor: crosshair;
+}
 
 .lineChart .canvasStack canvas {
 	position: absolute;
@@ -14,7 +21,7 @@
 	display: none;
 }
 
-.lineChart .axisWrapper .axis {
+.lineChart .axisWrapper svg {
 	position: absolute;
 	width: 100%;
 	height: 100%;

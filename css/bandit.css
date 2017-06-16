@@ -29,6 +29,10 @@ body {
 	height: 100%;
 }
 
+.pCoordChart .resultPaths path[mode="erased"] {
+	stroke: lightgray;
+}
+
 #resizeBar {
 	cursor: ns-resize;
 	height: 6px;
@@ -49,9 +53,69 @@ body {
 	left: 0px;
 }
 
+#toolbar {
+	position: relative;
+	background-color: #444;
+	border-bottom: 10px solid #333;
+	height: 30px;
+	margin-left: 400px;
+	padding: 10px;
+}
+#tooltip {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: #222;
+	border: 5px solid #111;
+	border-radius: 5px;
+	padding: 5px;
+	color: white;
+}
+#toolList {
+	padding: initial;
+	margin: initial;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	right: 20px;
+}
+.tool {
+	display: inline-block;
+	padding: 5px 8px;
+	color: white;
+	font-weight: bold;
+	background-color: #222;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	cursor: pointer;
+}
+.tool[mode="unselected"] {
+	box-shadow: inset 3px 3px 2px #444,
+				 inset -3px -3px 2px #111;
+}
+.tool[mode="unselected"]:hover {
+	box-shadow: inset 5px 5px 3px #555,
+				 inset -3px -3px 2px #111;
+}
+.tool[mode="selected"],
+.tool[mode="unselected"]:active {
+	background-color: #111;
+	box-shadow: inset 3px 3px 2px black,
+				 inset -3px -3px 2px #333;
+	color: #ccc;
+}
+.tool:first-child {
+	border-left: 1px solid black;
+	border-radius: 5px 0px 0px 5px;
+}
+.tool:last-child {
+	border-right: 1px solid black;
+	border-radius: 0px 5px 5px 0px;
+}
+
 #resultsArea {
 	position: absolute;
-	top: 5px;
+	top: 75px;
 	bottom: 5px;
 	right: 5px;
 	left: 405px;
@@ -104,7 +168,7 @@ body {
 	box-sizing: border-box;
 	background-color: #6c89b7;
 	border-right: 15px solid #283f60;
-	box-shadow: 2px 0px 5px dimgray;
+	box-shadow: 2px 0px 5px #222;
 }
 .sidebarThird {
 	position: relative;
