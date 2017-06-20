@@ -17,6 +17,10 @@ body {
 	margin: initial;
 }
 
+#database {
+	margin-left: 20px;
+}
+
 #svgArea {
 	box-sizing: border-box;
 	height: 300px;
@@ -32,7 +36,21 @@ body {
 .pCoordChart .resultPaths path[mode="erased"] {
 	stroke: lightgray;
 }
+.pCoordChart .resultPaths path {
+	stroke: green;
+	stroke-width: 1px;
+}
+.pCoordChart .highlightPath { 
+	stroke-width: 3px;
+	stroke: blue;
+}
+.pCoordChart .overlayPath {
+	stroke-width: 3px;
+	stroke-dasharray: initial;
+	stroke: blue;
+}
 
+/*Bar that is clicked-and-dragged to resize top half of screen*/
 #resizeBar {
 	cursor: ns-resize;
 	height: 6px;
@@ -53,6 +71,7 @@ body {
 	left: 0px;
 }
 
+/*Toolbar and tool buttons*/
 #toolbar {
 	position: relative;
 	background-color: #444;
@@ -120,10 +139,10 @@ body {
 	right: 5px;
 	left: 405px;
 }
+
 .socket {
 	box-sizing: border-box;
 	padding: 10px;
-	/*border: 2px solid blue;*/
 }
 #resultsArea .socket {
 	box-shadow: inset 0px 0px 10px black;
@@ -174,7 +193,6 @@ body {
 	position: relative;
 	height: 30%;
 	margin-bottom: 10px;
-	/*border: 2px solid red;*/
 	background-color: #446699;
 	box-shadow: inset 2px 3px 2px #618ac6,
 				inset -2px -3px 2px #283f60,
@@ -206,38 +224,9 @@ body {
 	font-size: 5px;
 }
 
-
 .viewContainer {
 	position: relative;
 	box-sizing: border-box;
 	width: 100%;
 	height: 100%;
-	/*border: 2px solid yellow;*/
 }
-
-.diffractionImage {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 45%;
-}
-#diffractionImage1 {
-	left: 0px;
-}
-#diffractionImage2 {
-	right: 0px;
-}
-
-/*.lineChart {
-	float: left;
-	width: 33.3%;
-	height: 400px;
-	box-shadow: inset 0px 0px 5px black;
-}
-
-.imageChart {
-	float: left;
-	width: 33.3%;
-	height: 400px;
-	box-shadow: inset 0px 0px 0px black;
-}*/
