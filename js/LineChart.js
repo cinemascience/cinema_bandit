@@ -83,6 +83,20 @@ function LineChart(parent, getData) {
 			.attr('transform','translate('+this.margin.left+',0)')
 			.call(this.yAxis);
 
+	//Determine screen DPI to rescale canvas contexts
+	//(prevents artifacts and blurring on some displays)
+	//https://stackoverflow.com/a/15666143/2827258
+	this.pixelRatio = (function() {
+		var ctx = document.createElement('canvas').getContext("2d"),
+			dpr = window.devicePixelRatio || 1,
+			bsr = ctx.webkitBackingStorePixelRatio ||
+					ctx.mozBackingStorePixelRatio ||
+					ctx.msBackingStorePixelRatio ||
+					ctx.oBackingStorePixelRatio ||
+					ctx.backingStorePixelRatio || 1;
+			return dpr / bsr;
+	})();
+
 	//Create canvases
 	this.canvasStack = this.contents.append('div')
 		.attr('class', 'canvasStack')
@@ -170,8 +184,12 @@ LineChart.prototype.updateSize = function() {
 
 	var self = this;
 	this.canvasStack.selectAll('canvas:not(#idCanvas)')
-		.attr('width',this.internalWidth)
-		.attr('height',this.internalHeight);
+		.attr('width',this.internalWidth*this.pixelRatio)
+		.attr('height',this.internalHeight*this.pixelRatio)
+		.each(function() {
+			var ctx = this.getContext('2d');
+			ctx.scale(self.pixelRatio,self.pixelRatio);
+		});
 	this.shownCanvasContext.globalAlpha = 0.2;
 	this.hiddenCanvasContext.globalAlpha = 0.5;
 	this.highlightCanvasContext.lineWidth = 3;
