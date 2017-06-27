@@ -150,8 +150,9 @@ function LineChart(parent, getData) {
 	this.getData = getData;
 	this.fullDsList = [];
 	this.loadedData = {};
-	this.drawMode = 0;
-	this.dataLoaded = false;
+	this.extentX = [];
+	this.extentY = [];
+	this.selection = [];
 
 	//Event handling
 	this.dispatch = d3.dispatch('mouseover','click','erase','include');
@@ -173,6 +174,87 @@ function LineChart(parent, getData) {
 	//Apply drag behavior to eraseIncludeMask
 	this.eraseIncludeMask
 		.call(this.eraseIncludeDrag.container(this.eraseIncludeMask.node()));
+
+
+	//Animation and loading
+	this.loadIndicator = this.canvasStack.append('div')
+		.attr('class','loadIndicator')
+		.style('display','none');
+	this.loadIcon = this.loadIndicator.append('div')
+		.attr('class','loadIcon')
+	this.loadText = this.loadIndicator.append('div')
+		.attr('class','loadText')
+		.style('display','none');
+
+	this.stillDrawing = false;//indicates that data is still being loaded in
+	this.stillLoading = false;//indicates that the graph is still being redrawn
+
+	this.loadingPrevious = false;//indicates that the previous load request has not finished yet
+
+	//Iterators for loading and redrawing
+	this.loadIter;
+	this.drawShownIter;
+	this.drawHiddenIter;
+	this.drawIdIter;
+
+	//Set tick-rate to ~60fps
+	setInterval(this.tick, 16, this);
+}
+
+//Called every frame (roughly 60 times a second).
+//If any iterators are active (defined), iterate through them.
+//When an iterator is finished, set it to undefined.
+LineChart.prototype.tick = function(self) {
+	var doneDraw = false;//was any drawing done this frame?
+	var doneLoad = false;//was any loading done this frame?
+
+	//Load iterator
+	if (self.loadIter) {
+		if (!self.loadingPrevious) {
+			if (self.loadIter.next().done)
+				self.loadIter = undefined;
+		}
+		doneDraw = true;
+		doneLoad = true;
+	}
+
+	//Shown and Hidden canvas redraw iterators
+	//This is quick so it iterates up to 25 times each frame
+	for (var i = 0; i < 25; i++) {
+		if (self.drawShownIter) {
+			if (self.drawShownIter.next().done) {
+				self.drawShownIter = undefined;
+			}
+			doneDraw = true;
+		}
+
+		if (self.drawHiddenIter) {
+			if (self.drawHiddenIter.next().done) {
+				self.drawHiddenIter = undefined;
+			}
+			doneDraw = true;
+		}
+	}
+
+	//Id canvas redraw iterator
+	for (var i = 0; i < 10; i++) {
+		if (self.drawIdIter) {
+			if (self.drawIdIter.next().done) {
+				self.drawIdIter = undefined;
+			}
+			doneDraw = true;
+		}
+	}
+
+	//Set visibility of loading icon/text if any work was done this frame
+	if (doneLoad != self.stillLoading) {
+		self.loadText.style('display', doneLoad ? 'initial' : 'none');
+		self.stillLoading = doneLoad;
+	}
+	if (doneDraw != self.stillDrawing) {
+		self.loadIndicator.style('display', doneDraw ? 'initial' : 'none');
+		self.stillDrawing = doneDraw;
+	}
 }
 
 //Call this whenever the parent changes size.
@@ -215,80 +297,104 @@ LineChart.prototype.updateSize = function() {
 	this.redraw();
 }
 
-//Shortcut to quickly redraw shown, hidden and highlighted data
+//Begin a redraw of the shown data and hidden data canvases.
+//Clears both canvases, and sets an iterator that will gradually
+//draw lines in when called by the tick function
 LineChart.prototype.redraw = function() {
-	this.redrawSingleContext(this.shownCanvasContext,this.shownData,"green");
-	this.redrawSingleContext(this.hiddenCanvasContext,this.hiddenData,"lightgrey");
+	var self = this;
+
+	this.shownCanvasContext.clearRect(0,0,this.internalWidth,this.internalHeight);
+	this.drawShownIter = (function*(queue){
+		var i = 0;
+		while (i < queue.length) {
+			self.drawLines(self.shownCanvasContext,
+							[queue[i]],
+							"green");
+			yield ++i;
+		}
+	})(this.shownData);
+
+	this.hiddenCanvasContext.clearRect(0,0,this.internalWidth,this.internalHeight);
+	this.drawHiddenIter = (function*(queue){
+		var i = 0;
+		while (i < queue.length) {
+			self.drawLines(self.hiddenCanvasContext,
+							[queue[i]],
+							"lightgrey");
+			yield ++i;
+		}
+	})(this.hiddenData);
+
 	this.redrawSingleContext(this.highlightCanvasContext,this.highlightData);
 }
 
 //Redraw the given canvas context with the given data in the given color
+//Note that this will redraw the context instantly, not through an iterator.
 LineChart.prototype.redrawSingleContext = function(context, data, color) {
 	context.clearRect(0,0,this.internalWidth,this.internalHeight);
 	if (data.length > 0)
 		this.drawLines(context, data, color);
 }
 
-//Redraw the idContext,
-//Because this is time consuming and should not be called constantly,
-//starts a timer when called and will redraw when the timer runs out,
-//but subsequent calls will reset the timer.
-//Example: The zoom event calls this each time the zoom changes
-//but because of the timer, the canvas is not redrawn until shortly
-//after zooming has finished. (this keeps things running smoothly)
+//Begin a redraw of the Id canvas.
+//Clears the canvas and sets an iterator that will gradually
+//draw lines in when called by the tick function
 LineChart.prototype.redrawIdContext = function() {
 	var self = this;
-	setTimeout(function() {
-		if (new Date() - self.timeLastCalled >= 500) {
-			self.idCanvasContext.clearRect(0, 0, 1000,1000);
-			self.drawLines(self.idCanvasContext, self.mode == 'include' ? self.hiddenData : self.shownData, 'id');
+	this.idCanvasContext.clearRect(0,0,1000,1000);
+	this.drawIdIter = (function*(queue) {
+		var i = 0;
+		while (i < queue.length) {
+			self.drawLines(self.idCanvasContext,
+							[queue[i]],
+							"id");
+			yield ++i;
 		}
-	},500);
-	this.timeLastCalled = new Date();
+	})(this.mode == 'include' ? this.hiddenData : this.shownData);
 }
 
-//Draws a line on the given context for the given data point in the given color.
+//Draws a line on the given context for the given data points in the given color.
 //If color is unspecified, defaults to the color specified by the data point itself.
 //If color is "id", draws in a color according to the data's index (used on the id canvas)
 LineChart.prototype.drawLines = function(context, dsList, color) {
-	var self = this;
-	dsList.forEach(function(item, index) {
+	for (var i in dsList) {
+		var ds = dsList[i];
 		if (color) {
 			if (color == 'id') {
-				var id = (item.id + 1);
-				var b = Math.floor(id / 256 / 256);
+				var id = ds.id+1;
+				var b = Math.floor(id/256/256);
 				var g = Math.floor((id - b*256*256) / 256);
 				var r = (id - b*256*256 - g*256);
-				context.strokeStyle = 'rgb('+r+','+g+','+b+')';//color;
+				context.strokeStyle = 'rgb('+r+','+g+','+b+')';//color
 			}
 			else {
 				context.strokeStyle = color;
 			}
 		}
 		else {
-			context.strokeStyle = item.dataSet.color;
+			context.strokeStyle = ds.dataSet.color;
 		}
 		context.beginPath();
-		item.rows.forEach(function(item, index) {
-			if (color == 'id') {
-				if (index == 0) {
-					context.moveTo(self.idCanvasX(item.x), self.idCanvasY(item.y));
-				}
-				else {
-					context.lineTo(self.idCanvasX(item.x), self.idCanvasY(item.y));
-				}
+		if (color == 'id') {
+			for (var j = 0; j < ds.points.length; j++) {
+				var d = ds.points[j];
+				if (j == 0)
+					context.moveTo(this.idCanvasX(d.x),this.idCanvasY(d.y));
+				else
+					context.lineTo(this.idCanvasX(d.x),this.idCanvasY(d.y));
 			}
-			else {
-				if (index == 0) {
-					context.moveTo(self.currentX(item.x), self.currentY(item.y));
-				}
-				else {
-					context.lineTo(self.currentX(item.x), self.currentY(item.y));
-				}
+		}
+		else {
+			for (var j = 0; j < ds.points.length; j++) {
+				var d = ds.points[j];
+				if (j == 0)
+					context.moveTo(this.currentX(d.x),this.currentY(d.y));
+				else
+					context.lineTo(this.currentX(d.x),this.currentY(d.y));
 			}
-		});
+		}
 		context.stroke();
-	});
+	}
 }
 
 //Filter the data to only include those with the indices specified in query
@@ -296,6 +402,7 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 //and not merely greyed-out liked erased data
 LineChart.prototype.setSelection = function(query) {
 	var self = this;
+	this.selection = query;
 	this.shownData = [];
 	this.hiddenData = [];
 
@@ -480,94 +587,140 @@ function replaceAll(str, find, replace) {
 }
 
 // Loads the data represented by the indices given in query.
-//Calls callback when done
-LineChart.prototype.loadData = function(query, callback) {
+// Sets an iterator which will gradually load data in when
+// called by the tick function
+LineChart.prototype.loadData = function(query) {
 	var self = this;
-	var dataSetsProcessed = 0;
-	this.extentX = [];
-	this.extentY = [];
 
-	query.forEach(function(item, index) {
-		var d = self.getData(item);
-		var id = item;
-		var dsList = [];
+	this.setSelection(query);
 
-		d.forEach(function(dataSet, dataSetIndex) {
-			d3.text(dataSet.file, function(text) {
-				if (text) {
-					// correct for white space delemited
-					if (dataSet.delimiter == " ") {
-						var lines = text.split('\n');
-						text = '';
-						lines = lines.slice(2, lines.length);
-						lines.forEach(function(item, index) {
-							if (index == 0) {
-								text = lines[index].trim();
+	this.loadIter = (function*(queue) {
+		var i = 0;
+		while (i < queue.length) {
+			self.loadingPrevious = true;
+			self.loadSingleData(queue[i], function() {
+				self.loadingPrevious = false;
+			});
+			self.loadText.text('Loading: ' + (i+1) + "/" + queue.length);
+			yield ++i;
+		}
+	})(query);
+}
+
+// Loads in the data for a given index.
+// Note that each index can potentially return multiple data points,
+// in which case all will be loaded in.
+// Calls callback when done (with a boolean value indicating if the load was successful).
+LineChart.prototype.loadSingleData = function(index, callback) {
+	var self = this;
+	var id = index;
+	var dsList = [];
+
+	//Call getData to get an array of data sets for the given index.
+	// Each data set should have the following fields:
+	// {file, color, columnX, columnY}
+	// file: Path to the file containing data
+	// color: A specific color to draw this data in (on highlight canvas)
+	// columnX: Specify which column of data in the file to use for the x-axis of the line
+	//	(Set to -1 to use the row number)
+	// columnY: Specify which column of data in the file to use for the y-axis of the line
+	//	(Set to -1 to just use first two columns for x and y, respectively)
+	// delimiter: Specifiy the character used to deliminate data in the file
+	var d = this.getData(index);
+
+	if (d == null) {
+		callback(false);
+		return null;
+	}
+
+	d.forEach(function(dataSet, dataSetIndex) {
+		d3.text(dataSet.file, function(text) {
+			if (text) {
+				// If text is white-space delimited, convert to tab-delimited
+				if (dataSet.delimiter == " ") {
+					var lines = text.split('\n');
+					text = '';
+					lines = lines.slice(2, lines.length);
+					lines.forEach(function(item, index) {
+						if (index == 0) {
+							text = lines[index].trim();
+						}
+						else {
+							if (index % 10 == 0) {
+								text = text + "\n" + lines[index].trim();
 							}
-							else {
-								if (index % 10 == 0) {
-									text = text + "\n" + lines[index].trim();
-								}
-							}
-						});
-						text = replaceAll(text,"  ","\t");
-					}
-
-					var rows = d3.tsvParseRows(text).map(function(row) {
-						return row.map(function(value) {
-							return +value;
-						});
+						}
 					});
-					var rows2 = []
-					if (dataSet.columnY >= 0) {	
-						rows.forEach(function(item, index) {
-							if (index % 1 == 0) {
-								var xval = index;
-								if (dataSet.columnX >= 0) {
-									xval = item[dataSet.columnX];
-								}
-								rows2.push({x : xval, y : item[dataSet.columnY]});
-							}
-						});
-					}
-					else {
-						rows.forEach(function(item, index) {
-							if (index % 1 == 0) {
-								rows2.push({x : item[0], y : item[1]});
-							}
-						});
-					}
-
-					dsList.push({dataSet: dataSet, rows: rows2, id: id});
-					self.fullDsList.push({dataSet: dataSet, rows: rows2, id: id});
-
-					self.extentX.push.apply(self.extentX, d3.extent(rows2, function(d) { return d.x; }));
-					self.extentY.push.apply(self.extentY, d3.extent(rows2, function(d) { return d.y; }));
-
-					if (dataSetIndex == d.length - 1) {
-						self.loadedData[id] = dsList;
-					}
+					text = replaceAll(text,"  ","\t");
 				}
 
-				if (dataSetIndex == d.length - 1) {
-					dataSetsProcessed = dataSetsProcessed + 1;
+				//Parse into rows
+				var rows = d3.tsvParseRows(text).map(function(row) {
+					return row.map(function(value) {
+						return +value;
+					});
+				});
+				//Parse rows into points
+				var points = []
+				if (dataSet.columnY >= 0) {
+					rows.forEach(function(row, index) {
+						var xval = index;
+						if (dataSet.columnX >= 0) {
+							xval = row[dataSet.columnX];
+						}
+						points.push({x : xval, y : row[dataSet.columnY]});
+					});
+				}
+				else {
+					rows.forEach(function(row, index) {
+						points.push({x : row[0], y : row[1]});
+					});
 				}
 
-				if (dataSetsProcessed == query.length) {
+				dsList.push({dataSet: dataSet, points: points, id: id});
+				self.fullDsList.push({dataSet: dataSet, points: points, id: id});
+
+				//Calculate new extents of the data
+				var oldExtentX = self.extentX.slice(),
+					oldExtentY = self.extentY.slice();
+				var dataExtentX = d3.extent(points, function(d) { return d.x; }),
+					dataExtentY = d3.extent(points, function(d) { return d.y; });
+				self.extentX = d3.extent(self.extentX.concat(dataExtentX));
+				self.extentY = d3.extent(self.extentY.concat(dataExtentY));
+				
+				var extentsChanged = (self.extentX[0] != oldExtentX[0] ||
+						self.extentX[1] != oldExtentX[1] ||
+						self.extentY[0] != oldExtentY[0] ||
+						self.extentY[1] != oldExtentY[1]);
+				//Set new domains on scales if extents have changed
+				if (extentsChanged) {
 					self.x.domain(d3.extent(self.extentX, function(d) { return d; }));
 					self.y.domain(d3.extent(self.extentY, function(d) { return d; }));
 					self.currentX.domain(self.x.domain().slice());
 					self.currentY.domain(self.y.domain().slice());
-					self.idCanvasX.domain(d3.extent(self.extentX, function(d) { return d; }));
-					self.idCanvasY.domain(d3.extent(self.extentY, function(d) { return d; }));
-
-					self.drawLines(self.idCanvasContext, self.fullDsList, "id");
-					self.shownData = self.fullDsList;
-					self.dataLoaded = true;
-					callback();
+					self.idCanvasX.domain(self.x.domain().slice());
+					self.idCanvasY.domain(self.y.domain().slice());
+					self.updateSize();
+					self.redrawIdContext();
 				}
-			});
+
+				//Once all data for this index has been loaded,
+				//Add to loaded data and draw on canvas if they are included
+				//in the current selection
+				if (dataSetIndex == d.length - 1) {
+					self.loadedData[id] = dsList;
+					if (self.selection.includes(id)) {
+						self.shownData = self.shownData.concat(dsList);
+						self.drawLines(self.shownCanvasContext,dsList,"green");
+						if (self.mode != 'include')
+							self.drawLines(self.idCanvasContext,dsList,"id");
+					}
+					callback(true);
+				}
+			}//end if (text)
+			else {
+				callback(false);
+			}
 		});
 	});
-	
 }

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
+	<!--BANDIT VIEWER
+		Version 1.1-->
 	<title>Bandit</title>
 	<meta charset="utf-8">
 	<meta name='author' content='Dan Orban'>
@@ -22,11 +24,7 @@
 		<div id="header">
 			<h1>Bandit</h1>
 			<select id="database" onchange="load()">
-				<option value="GF-HP/GF-HP.csv">GF-HP</option>
-				<option value="GF-LP/GF-LP.csv">F-LP</option>
-				<option value="LANLHigh-O/LANLHigh-O.csv">LANLHigh-O</option>
-				<option value="LANLLow-O/LANLLow-O.csv">LANLLow-O</option>
-				<option value="simresults/Al.design.1000.numbered.csv">Flag Simulation</option>
+				<!--This will be populated with data sets from databases.json-->
 			</select>
 		</div>
 		<div id="svgArea">
@@ -44,8 +42,10 @@
 			<div id="visarSocketContainer" class="sidebarThird">
 				<span>Visar</span>
 				<div id="visarSocket" class="socket">
-					<div id="visarSocketOverlay" class="socketOverlay" mode="empty"></div>
-					<!--Visar chart starts in the main view socket. Not in sidebar-->
+					<div id="visarContainer" class="viewContainer">
+						<!--The Visar Chart is created in here-->
+					</div>
+					<div id="visarSocketOverlay" class="socketOverlay" mode="disabled"></div>
 				</div>
 			</div>
 			<div id="diffractionSocketContainer" class="sidebarThird">
@@ -54,7 +54,7 @@
 					<div id="diffractionContainer" class="viewContainer">
 						<!--The Diffraction chart is created in here-->
 					</div>
-					<div id="diffractionSocketOverlay" class="socketOverlay" mode="filled"></div>
+					<div id="diffractionSocketOverlay" class="socketOverlay" mode="disabled"></div>
 				</div>
 			</div>
 			<div id="diffractionImageSocketContainer" class="sidebarThird">
@@ -63,7 +63,7 @@
 					<div id="diffractionImageContainer" class="viewContainer">
 						<!--The Diffraction Image display is created in here-->
 					</div>
-					<div id="diffractionImageSocketOverlay" class="socketOverlay" mode="filled"></div>
+					<div id="diffractionImageSocketOverlay" class="socketOverlay" mode="disabled"></div>
 				</div>
 			</div>
 		</div>
@@ -78,11 +78,14 @@
 				<!--The closing tags are excluded because having whitespace between each li adds spaces into the webpage-->
 			</ul>
 		</div>
+		<!--The Main View-->
 		<div id="resultsArea">
+			<div id = "mainViewLabel">
+				<!--This is hidden when a view is in the socket-->
+				Click a view on the sidebar to expand it into here.
+			</div>
 			<div id = "mainViewSocket" class="socket">
-				<div id="visarContainer" class="viewContainer">
-					<!--The Visar Chart is created in here-->
-				</div>
+				<!--Views from the sidebar will be placed in here-->
 			</div>
 		</div>
 	</div>
