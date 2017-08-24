@@ -85,6 +85,7 @@ body {
 	height: 30px;
 	margin-left: 400px;
 	padding: 10px;
+	visibility: hidden;
 }
 #tooltip {
 	position: absolute;
@@ -141,7 +142,7 @@ body {
 /*Main view*/
 #resultsArea {
 	position: absolute;
-	top: 75px;
+	top: 5px;
 	bottom: 5px;
 	right: 5px;
 	left: 405px;
