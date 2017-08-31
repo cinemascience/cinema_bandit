@@ -68,6 +68,9 @@ function load() {
 	$('#diffractionContainer').html('');
 	$('#diffractionImageContainer').html('');
 
+
+	$('#toolbar').slideUp(500);
+
 	//Reset view
 	$('#diffractionSocketOverlay').attr('mode','disabled');
 	$('#visarSocketOverlay').attr('mode','disabled');
@@ -82,8 +85,9 @@ function load() {
 			break;
 		case "diffractionImageContainer":
 			currentView.insertBefore('#diffractionImageSocketOverlay');
-			$('#toolbar').slideDown(500);
-			$('#resultsArea').animate({top: '65px'});
+			//$('#toolbar').slideDown(500);
+			//$('#resultsArea').animate({top: '65px'});
+			break;
 	}
 
 	//Set selected tool to the Zoom/Pan tool if it isn't selected already
@@ -200,13 +204,13 @@ $('.socketOverlay')
 					currentView.insertBefore('#diffractionImageSocketOverlay');
 					$('#diffractionImageSocketOverlay').attr('mode','filled');
 					diffractionImageDisplay.updateSize();
-					$('#toolbar').slideDown(500);
+					/*$('#toolbar').slideDown(500);
 					$('#resultsArea').animate({top: '65px'},callback=function() {
 						if (socketContents.attr('id') == 'visarContainer')
 							visarChart.updateSize();
 						else
 							diffractionChart.updateSize();
-					});
+					});*/
 			}
 			//Place socket contents into main view
 			$('#mainViewSocket').append(socketContents);

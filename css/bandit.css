@@ -85,6 +85,7 @@ body {
 	height: 30px;
 	margin-left: 400px;
 	padding: 10px;
+	visibility: hidden;
 }
 #tooltip {
 	position: absolute;
