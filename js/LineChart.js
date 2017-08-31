@@ -10,6 +10,8 @@
  * Author: Cameron Tauxe
  */
 
+var BaseLineColor = "black";
+
 //Create a new line chart and append it to the given parent.
 //Uses function provided by getData to retrieve data files when loading
 function LineChart(parent, getData) {
@@ -309,7 +311,7 @@ LineChart.prototype.redraw = function() {
 		while (i < queue.length) {
 			self.drawLines(self.shownCanvasContext,
 							[queue[i]],
-							"green");
+							BaseLineColor);
 			yield ++i;
 		}
 	})(this.shownData);
@@ -711,7 +713,7 @@ LineChart.prototype.loadSingleData = function(index, callback) {
 					self.loadedData[id] = dsList;
 					if (self.selection.includes(id)) {
 						self.shownData = self.shownData.concat(dsList);
-						self.drawLines(self.shownCanvasContext,dsList,"green");
+						self.drawLines(self.shownCanvasContext,dsList,"blac");
 						if (self.mode != 'include')
 							self.drawLines(self.idCanvasContext,dsList,"id");
 					}

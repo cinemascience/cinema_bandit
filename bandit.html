@@ -3,7 +3,7 @@
 <head>
 	<!--BANDIT VIEWER
 		Version 1.1-->
-	<title>Bandit</title>
+	<title>Cinema:Bandit</title>
 	<meta charset="utf-8">
 	<meta name='author' content='Dan Orban'>
 	<meta name='author' content="Cameron Tauxe">
@@ -22,7 +22,7 @@
 <body>
 	<div id="topHalf">
 		<div id="header">
-			<h1>Bandit</h1>
+			<h1>Cinema:Bandit</h1>
 			<select id="database" onchange="load()">
 				<!--This will be populated with data sets from databases.json-->
 			</select>
@@ -48,15 +48,6 @@
 					<div id="visarSocketOverlay" class="socketOverlay" mode="disabled"></div>
 				</div>
 			</div>
-			<div id="diffractionSocketContainer" class="sidebarThird">
-				<span>Diffraction Graph</span>
-				<div id="diffractionSocket" class="socket">
-					<div id="diffractionContainer" class="viewContainer">
-						<!--The Diffraction chart is created in here-->
-					</div>
-					<div id="diffractionSocketOverlay" class="socketOverlay" mode="disabled"></div>
-				</div>
-			</div>
 			<div id="diffractionImageSocketContainer" class="sidebarThird">
 				<span>Diffraction Image</span>
 				<div id="diffractionImageSocket" class="socket">
@@ -66,17 +57,15 @@
 					<div id="diffractionImageSocketOverlay" class="socketOverlay" mode="disabled"></div>
 				</div>
 			</div>
-		</div>
-		<div id="toolbar">
-			<div id = "tooltip">
-				Scroll to zoom, click-and-drag to pan.
+			<div id="diffractionSocketContainer" class="sidebarThird">
+				<span>Diffraction Graph</span>
+				<div id="diffractionSocket" class="socket">
+					<div id="diffractionContainer" class="viewContainer">
+						<!--The Diffraction chart is created in here-->
+					</div>
+					<div id="diffractionSocketOverlay" class="socketOverlay" mode="disabled"></div>
+				</div>
 			</div>
-			<ul id="toolList">
-				<li id="zoomTool" class="tool" mode="unselected">Zoom/Pan
-				<li id="eraseTool" class="tool" mode="unselected">Erase
-				<li id="includeTool" class="tool" mode="unselected">Include
-				<!--The closing tags are excluded because having whitespace between each li adds spaces into the webpage-->
-			</ul>
 		</div>
 		<!--The Main View-->
 		<div id="resultsArea">

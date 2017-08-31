@@ -41,7 +41,7 @@ body {
 	stroke: lightgray;
 }
 .pCoordChart .resultPaths path {
-	stroke: green;
+	stroke: lightgrey;
 	stroke-width: 1px;
 }
 .pCoordChart .highlightPath { 
@@ -141,7 +141,7 @@ body {
 /*Main view*/
 #resultsArea {
 	position: absolute;
-	top: 75px;
+	top: 5px;
 	bottom: 5px;
 	right: 5px;
 	left: 405px;
