@@ -10,7 +10,7 @@
  * Author: Cameron Tauxe
  */
 
-var BaseLineColor = "black";
+var BaseLineColor = "grey";
 
 //Create a new line chart and append it to the given parent.
 //Uses function provided by getData to retrieve data files when loading
@@ -322,7 +322,7 @@ LineChart.prototype.redraw = function() {
 		while (i < queue.length) {
 			self.drawLines(self.hiddenCanvasContext,
 							[queue[i]],
-							"lightgrey");
+							BaseLineColor);
 			yield ++i;
 		}
 	})(this.hiddenData);

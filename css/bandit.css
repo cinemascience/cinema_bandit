@@ -27,8 +27,7 @@ body {
 	box-sizing: border-box;
 	height: 300px;
 	padding: 10px;
-	background-color: white;
-	box-shadow: inset 0px 0px 10px black;
+	background-color: whitesmoke;
 }
 #svgContainer {
 	width: 100%;
@@ -41,7 +40,7 @@ body {
 	stroke: lightgray;
 }
 .pCoordChart .resultPaths path {
-	stroke: lightgrey;
+	stroke: grey;
 	stroke-width: 1px;
 }
 .pCoordChart .highlightPath { 

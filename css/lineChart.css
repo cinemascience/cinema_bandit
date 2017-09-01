@@ -1,6 +1,6 @@
 .lineChart .canvasStack {
 	/*Position/Sizing is handled in code*/
-	background-color: white;
+	background-color: whitesmoke;
 }
 .lineChart .canvasStack:active {
 	cursor: move;
