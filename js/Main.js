@@ -22,6 +22,11 @@ var diffractionChart;
 var diffractionImageDisplay;
 var visarChart;
 
+// colors
+var Visar_second = "red";
+var Visar_first  = "blue";
+var Highlight    = "blue";
+
 var databases;
 //Currently loaded database
 var db;
@@ -394,14 +399,14 @@ function getDiffData(i) {
 		var result = chart.results[i];
 		var data = [];
 		if (result.diffraction_file)
-			data.push({file: db.directory+'/'+result.diffraction_file, color:"blue", 
+			data.push({file: db.directory+'/'+result.diffraction_file, color: Highlight, 
 						columnX:result.diffraction_xCol, columnY:result.diffraction_yCol,delimiter:result.diffraction_delimiter});
 		else if (result.diffraction_file1) {
-			data.push({file: db.directory+'/'+result.diffraction_file1, color:"blue", 
+			data.push({file: db.directory+'/'+result.diffraction_file1, color: Visar_first,
 						columnX:result.diffraction1_xCol, columnY:result.diffraction1_yCol,delimiter:result.diffraction_delimiter});
 		}
 		if (result.diffraction_file2)
-				data.push({file: db.directory+'/'+result.diffraction_file2, color:"red", 
+				data.push({file: db.directory+'/'+result.diffraction_file2, color: Visar_second,
 						columnX:result.diffraction2_xCol, columnY:result.diffraction2_yCol,delimiter:result.diffraction_delimiter});
 		return data;
 	}
@@ -416,14 +421,14 @@ function getVisarData(i) {
 		var result = chart.results[i];
 		var data = [];
 		if (result.visar_file)
-			data.push({file: db.directory+'/'+result.visar_file, color:"blue", 
+			data.push({file: db.directory+'/'+result.visar_file, color: Highlight, 
 						columnX:result.visar_xCol, columnY:result.visar_yCol,delimiter:result.visar_delimiter});
 		else if (result.visar_file1) {
-			data.push({file: db.directory+'/'+result.visar_file1, color:"blue", 
+			data.push({file: db.directory+'/'+result.visar_file1, color: Visar_first, 
 						columnX:result.visar1_xCol, columnY:result.visar1_yCol,delimiter:result.visar_delimiter});
 		}
 		if (result.visar_file2)
-				data.push({file: db.directory+'/'+result.visar_file2, color:"red", 
+				data.push({file: db.directory+'/'+result.visar_file2, color: Visar_second, 
 						columnX:result.visar2_xCol, columnY:result.visar2_yCol,delimiter:result.visar_delimiter});
 		return data;
 	}
