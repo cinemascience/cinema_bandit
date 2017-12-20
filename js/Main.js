@@ -117,7 +117,7 @@ function load() {
 				'diffraction_image','diffraction_image1','diffraction_image2']
 
 	chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
-										db.directory+'/data.csv',
+										db.directory+'/Data.csv',
 										filter,
 										doneLoading);
 }
@@ -159,7 +159,7 @@ function doneLoading() {
 
 	//Create diffraction images display if data is present
 	if (chart.results[0].diffraction_image || chart.results[0].diffraction_image1 || chart.results[0].diffraction_image2) {
-		diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'));
+		diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'), 2);
 		$('#diffractionImageSocketOverlay').attr('mode','filled');
 	}
 }

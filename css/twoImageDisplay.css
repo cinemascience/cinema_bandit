@@ -10,12 +10,12 @@
 	width: 50%;
 	padding-bottom: 50%;
 }
-.twoImageDisplay #rightCanvasWrapper {
+/*.twoImageDisplay #canvasWrapper1 {
 	right: 0px;
 }
-.twoImageDisplay #leftCanvasWrapper {
+.twoImageDisplay #canvasWrapper0 {
 	left: 0px;
-}
+}*/
 
 .twoImageDisplay .canvasWrapper canvas {
 	box-sizing: border-box;
