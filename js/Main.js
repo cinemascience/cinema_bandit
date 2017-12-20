@@ -19,7 +19,7 @@
 var chartLoaded = false;
 var chart;//parallel coordinates chart
 var diffractionChart;
-var diffractionImageDisplay;
+var imageDisplays = [];
 var visarChart;
 
 // colors
@@ -71,7 +71,6 @@ function load() {
 	$('#svgContainer').html('');
 	$('#visarContainer').html('');
 	$('#diffractionContainer').html('');
-	$('#diffractionImageContainer').html('');
 
 
 	$('#toolbar').slideUp(500);
@@ -79,8 +78,21 @@ function load() {
 	//Reset view
 	$('#diffractionSocketOverlay').attr('mode','disabled');
 	$('#visarSocketOverlay').attr('mode','disabled');
-	$('#diffractionImageSocketOverlay').attr('mode','disabled');
-	var currentView = $('#mainViewSocket .viewContainer');
+	var currentView = $('.viewContainer');
+	currentView.html('');
+	$.each(currentView, function(index, item){
+		var keys = d3.select(item).attr("id").split("_");
+		if (keys.length > 1 && keys[1] == "image") {
+			imageDisplays.push({
+				key: keys[0] + "_" + keys[1]
+			});
+		}
+	});
+
+	imageDisplays.forEach(function(item) {
+		$('#'+item.key+'_SocketOverlay').attr('mode','disabled');
+	});
+
 	switch (currentView.attr('id')) {
 		case "visarContainer":
 			currentView.insertBefore('#visarSocketOverlay');
@@ -88,12 +100,18 @@ function load() {
 		case "diffractionContainer":
 			currentView.insertBefore('#diffractionSocketOverlay');
 			break;
-		case "diffractionImageContainer":
-			currentView.insertBefore('#diffractionImageSocketOverlay');
+/*		case "diffraction_image_Container":
+			currentView.insertBefore('#diffraction_image_SocketOverlay');
 			//$('#toolbar').slideDown(500);
 			//$('#resultsArea').animate({top: '65px'});
-			break;
+			break;*/
 	}
+
+	imageDisplays.forEach(function(item) {
+		if (currentView.attr('id') == '#'+item.key+'_Container') {
+			currentView.insertBefore('#'+item.key+'_SocketOverlay');
+		}
+	});
 
 	//Set selected tool to the Zoom/Pan tool if it isn't selected already
 	if ($('#zoomTool').attr('mode') != 'selected') {
@@ -113,11 +131,14 @@ function load() {
 				'visar2_xCol','visar2_yCol','visar_delimiter',
 				'diffraction_file','diffraction_file1','diffraction_file2',
 				'diffraction_xCol','diffraction_yCol','diffraction1_xCol','diffraction1_yCol',
-				'diffraction2_xCol','diffraction2_yCol','diffraction_delimiter',
-				'diffraction_image','diffraction_image1','diffraction_image2']
+				'diffraction2_xCol','diffraction2_yCol','diffraction_delimiter'];
+
+	imageDisplays.forEach(function(item) {
+		filter.push(item.key);
+	})
 
 	chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
-										db.directory+'/Data.csv',
+										db.directory+'/data.csv',
 										filter,
 										doneLoading);
 }
@@ -157,11 +178,23 @@ function doneLoading() {
 		$('#diffractionSocketOverlay').attr('mode','filled');
 	}
 
+
 	//Create diffraction images display if data is present
-	if (chart.results[0].diffraction_image || chart.results[0].diffraction_image1 || chart.results[0].diffraction_image2) {
-		diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'), 2);
-		$('#diffractionImageSocketOverlay').attr('mode','filled');
-	}
+	//if (chart.results[0].diffraction_image || chart.results[0].diffraction_image1 || chart.results[0].diffraction_image2) {
+
+	imageDisplays.forEach(function(display) {
+		var numImages = 0;
+		while ((display.key + numImages) in chart.results[0])
+		{
+			numImages++;
+		}
+
+		if (numImages > 0) {
+			display.display = new TwoImageDisplay(d3.select('#' + display.key + '_Container'), numImages);
+			$('#' + display.key + '_SocketOverlay').attr('mode','filled');
+		}
+	});
+	
 }
 
 //Set up dragging on the resize bar
@@ -181,8 +214,9 @@ var resizeDrag = d3.drag()
 			diffractionChart.updateSize();
 		if (visarChart)
 			visarChart.updateSize();
-		if (diffractionImageDisplay)
-			diffractionImageDisplay.updateSize();
+		imageDisplays.forEach(function(display) {
+			display.display.updateSize();
+		});
 	});
 d3.select('#resizeBar').call(resizeDrag);
 
@@ -205,10 +239,10 @@ $('.socketOverlay')
 					$('#diffractionSocketOverlay').attr('mode','filled');
 					diffractionChart.updateSize();
 					break;
-				case "diffractionImageContainer":
-					currentView.insertBefore('#diffractionImageSocketOverlay');
-					$('#diffractionImageSocketOverlay').attr('mode','filled');
-					diffractionImageDisplay.updateSize();
+				/*case "diffraction_image_Container":
+					currentView.insertBefore('#diffraction_image_SocketOverlay');
+					$('#diffraction_image_SocketOverlay').attr('mode','filled');
+					diffraction_image_Display.updateSize();*/
 					/*$('#toolbar').slideDown(500);
 					$('#resultsArea').animate({top: '65px'},callback=function() {
 						if (socketContents.attr('id') == 'visarContainer')
@@ -217,6 +251,17 @@ $('.socketOverlay')
 							diffractionChart.updateSize();
 					});*/
 			}
+
+
+			imageDisplays.forEach(function(item) {
+				if (currentView.attr("id") == item.key + "_Container") {
+					console.log("again", item.key);
+					currentView.insertBefore('#'+item.key+'_SocketOverlay');
+					$('#'+item.key+'_SocketOverlay').attr('mode','filled');
+					item.display.updateSize();
+				}
+			});
+
 			//Place socket contents into main view
 			$('#mainViewSocket').append(socketContents);
 			$(this).attr('mode',"empty");
@@ -227,12 +272,25 @@ $('.socketOverlay')
 				case "diffractionContainer":
 					diffractionChart.updateSize();
 					break;
-				case "diffractionImageContainer":
+				/*case "diffraction_image_Container":
 					$('#toolbar').slideUp(500);
 					$('#resultsArea').animate({top: '5px'},callback=function() {
-						diffractionImageDisplay.updateSize();
-					});
+						imageDisplays.forEach(function(item) {
+							if (item.display) {
+								item.display.updateSize();
+							}
+						});
+					});*/
 			}
+
+			imageDisplays.forEach(function(item) {
+				$('#toolbar').slideUp(500);
+				$('#resultsArea').animate({top: '5px'},callback=function() {
+						if (item.display) {
+							item.display.updateSize();
+						}
+				});
+			});
 		}
 	});
 
@@ -292,8 +350,9 @@ function resizeend() {
 			diffractionChart.updateSize();
 		if (visarChart)
 			visarChart.updateSize();
-		if (diffractionImageDisplay)
-			diffractionImageDisplay.updateSize();
+		imageDisplays.forEach(function(display) {
+			display.display.updateSize();
+		});
 	}
 }
 
@@ -344,11 +403,16 @@ function onMouseOverChange(i, event) {
 			diffractionChart.setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
 		if (visarChart)
 			visarChart.setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
-		if (diffractionImageDisplay) {
-			var images = getImages(i);
-			diffractionImageDisplay.setLeftImage(images[0]);
-			diffractionImageDisplay.setRightImage(images[1]);
-		}
+
+		imageDisplays.forEach(function(display) {
+			if (display.display) {
+				var images = getImages(i, display.key, display.display.numImages);
+				for (var f = 0; f < display.display.numImages; f++) {
+					display.display.setImage(f, images[f]);
+				}
+			}
+		});
+		
 	}
 	else {//i is null when mousing over a blank area
 		if (diffractionChart)
@@ -356,11 +420,15 @@ function onMouseOverChange(i, event) {
 		if (visarChart)
 			visarChart.setHighlight([selectedData].concat(alwaysHighlighted));
 		//Revert images to those of the selected data
-		if (selectedData != null && diffractionImageDisplay) {
-			var images = getImages(selectedData);
-			diffractionImageDisplay.setLeftImage(images[0]);
-			diffractionImageDisplay.setRightImage(images[1]);
-		}
+
+		imageDisplays.forEach(function(display) {
+			if (selectedData != null && display.display) {
+				var images = getImages(i, display.key, display.display.numImages);
+				for (var f = 0; f < display.display.numImages; f++) {
+					display.display.setImage(f, images[f]);
+				}
+			}
+		});
 	}
 }
 
@@ -436,16 +504,14 @@ function getVisarData(i) {
 }
 
 //Get the filenames for diffraction images for the given data index.
-function getImages(i) {
+function getImages(i, imageName, numImages) {
 	if (chartLoaded) {
 		var result = chart.results[i];
-		var filename1, filename2;
-		if (result.diffraction_image)
-			filename1 = db.directory + "/" + result.diffraction_image;
-		else if (result.diffraction_image1)
-			filename1 = db.directory + "/" + result.diffraction_image1;
-		if (result.diffraction_image2)
-			filename2 = db.directory + "/" + result.diffraction_image2;
-		return [filename1,filename2];
+		var images = [];
+		for (var f = 0; f < numImages; f++) {
+			images.push(db.directory + "/" + result[imageName + f]);
+		}
+
+		return images;
 	}
 }
