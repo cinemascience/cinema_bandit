@@ -41,7 +41,7 @@ body {
 }
 .pCoordChart .resultPaths path {
 	stroke: grey;
-	stroke-width: 1px;
+	stroke-width: 3px;
 }
 .pCoordChart .highlightPath { 
 	stroke-width: 3px;

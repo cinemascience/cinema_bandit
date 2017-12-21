@@ -70,6 +70,10 @@ TwoImageDisplay.prototype.setImage = function(i, url) {
 	d3.select(self.images[i].img).on('load', function() {
 		self.images[i].context.drawImage(self.images[i].img, 0, 0, self.squareSize, self.squareSize);
 	});
+        d3.select(self.images[i].img).on('error', function() {
+//	    self.images[i].context.clearRect(0, 0, self.images[i].canvas.width, self.images[i].canvas.height);
+	    self.images[i].img.src = "images/not_found.png"
+	});
 	self.images[i].img.src = url;
 }
 
