@@ -1,3 +1,4 @@
+
 /**
  * Main script for Bandit Viewer
  * 
@@ -21,6 +22,8 @@ var chart;//parallel coordinates chart
 var diffractionChart;
 var imageDisplays = [];
 var visarChart;
+var slider;
+var sliderText;
 
 // colors
 var Visar_second = "red";
@@ -143,8 +146,51 @@ function load() {
 										doneLoading);
 }
 
+function performSelectionUpdate(saveSelected, i) {
+    var val =  chart.results[i != null ? i : selectedData]["Run #"];
+    sliderText.property("value", val);
+    if (i == null) {
+	slider.property("value", selectedData);
+    }
+    if (saveSelected) {
+              selectedData = i;
+	chart.overlayPathData = [{data: chart.results[i]}];
+	chart.updateOverlayPaths(true);
+    }
+    updateSelected(i);
+}
+
 //Called when parallel coordinates chart finishes loading
 function doneLoading() {
+    d3.select("#sliderContainer").html("");
+    var sliderDiv = d3.select("#sliderContainer").append("div");
+					
+					slider = sliderDiv.append("div")
+			   			.append("input")
+			   				.attr("type","range")
+			   				.attr("min", "0")
+			   				.attr("max", chart.results.length - 1)
+			   				.property("value", "0")
+			   				.style("float", "left")
+			   				.style("width", "80%");
+			   		sliderText = sliderDiv.append("input")
+			   				.attr("type","text")
+			   				.attr("value", chart.results[0]["Run #"])
+			   				.style("width", "40px")
+			   				.on("input", function() {
+//			   					var index = chart.results[+this.value]["Run #"];
+//			   					slider.property("value", index);
+			   				});
+
+			   		slider.on("input", function() {
+			   				performSelectionUpdate(true, +this.value);
+		   					//query[key] = val;
+		   					//updateResults();
+			   			});
+
+        slider.property("value",chart.results.length - 1);
+        slider.dispatch("input");
+
 	chartLoaded = true;
 
 	//Add listeners for chart
@@ -392,6 +438,13 @@ function onInclude(i) {
 //Called when a data point in any chart is moused over.
 //Sets the highlights in all charts accordingly.
 function onMouseOverChange(i, event) {
+    //updateSelected(i);
+    slider.property("value",i);
+    //slider.dispatch("input");
+    performSelectionUpdate(false, i);
+}
+
+function updateSelected(i) {
 	//The parallel coordiantes chart does the highlighting by itself,
 	//so the highlight isn't called if the mouse over was triggered by it.
 	if (this !== chart && chartLoaded) {
@@ -423,7 +476,7 @@ function onMouseOverChange(i, event) {
 
 		imageDisplays.forEach(function(display) {
 			if (selectedData != null && display.display) {
-				var images = getImages(i, display.key, display.display.numImages);
+				var images = getImages(selectedData, display.key, display.display.numImages);
 				for (var f = 0; f < display.display.numImages; f++) {
 					display.display.setImage(f, images[f]);
 				}
