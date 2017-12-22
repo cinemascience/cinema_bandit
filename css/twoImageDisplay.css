@@ -4,11 +4,11 @@
 
 .twoImageDisplay .canvasWrapper{
 	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
+	/*top: 50%;*/
+	/*transform: translateY(-50%);*/
 	box-sizing: border-box;
 	width: 50%;
-	padding-bottom: 50%;
+	/*padding-bottom: 50%;*/
 }
 /*.twoImageDisplay #canvasWrapper1 {
 	right: 0px;

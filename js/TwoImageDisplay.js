@@ -22,6 +22,9 @@ function TwoImageDisplay(parent, numImages) {
 
 	console.log(this.internalWidth, this.numImages, this.squareSize, this.internalHeight);
 
+	this.notFoundImage = document.createElement('img');
+	this.notFoundImage.src = "images/not_found.png";
+
 	//Zooming
 	var self = this;
 	this.zoomBehavior = d3.zoom()
@@ -47,13 +50,9 @@ function TwoImageDisplay(parent, numImages) {
 		var imageWrapper = this.imageWrapper.append('div')
 			.attr('id','canvasWrapper' + f)
 			.attr('class','canvasWrapper');
-		imageWrapper.style('width', '' + (100/this.numImages) + '%');
-		if (f == this.numImages - 1) {
-			imageWrapper.style('right', '0px');
-		}
-		else {
-			imageWrapper.style('left', '' + ((100/this.numImages)*f) + '%');
-		}
+		imageWrapper.style('width', this.squareSize + 'px')
+			.style('height', this.squareSize + 'px');//'' + (100/this.numImages) + '%');
+		imageWrapper.style('left', '' + (this.squareSize*f) + 'px');
 		var canvas = imageWrapper.append('canvas')
 				.attr('id','canvas' + f)
 				.attr('width',this.squareSize+'px')
@@ -65,16 +64,29 @@ function TwoImageDisplay(parent, numImages) {
 
 //Set the left-side image to display the image from the given url.
 TwoImageDisplay.prototype.setImage = function(i, url) {
+		//console.log(i, url);
 	var self = this;
-	self.images[i].img = document.createElement('img');
-	d3.select(self.images[i].img).on('load', function() {
-		self.images[i].context.drawImage(self.images[i].img, 0, 0, self.squareSize, self.squareSize);
-	});
-        d3.select(self.images[i].img).on('error', function() {
-//	    self.images[i].context.clearRect(0, 0, self.images[i].canvas.width, self.images[i].canvas.height);
-	    self.images[i].img.src = "images/not_found.png"
-	});
-	self.images[i].img.src = url;
+		self.images[i].img = document.createElement('img');
+		if (!self.images[i].version) {
+			self.images[i].version = 0;
+		}
+		self.images[i].version = self.images[i].version+1;
+		var version = self.images[i].version;
+		d3.select(self.images[i].img).on('load', function() {
+	    	//console.log(url, 'loaded')
+			self.images[i].context.drawImage(self.images[i].img, 0, 0, self.squareSize, self.squareSize);
+			self.images[i].found = true;
+		});
+	    d3.select(self.images[i].img).on('error', function() {
+		    //self.images[i].img = self.notFoundImage;
+			//self.images[i].found = false;
+			//self.images[i].context.drawImage(self.notFoundImage, 0, 0, this.squareSize, this.squareSize);
+	    	//console.log(url)
+	    	if (version == self.images[i].version) {
+	    		self.images[i].img.src = "images/not_found.png"
+	    	}
+		});
+		self.images[i].img.src = url;	
 }
 
 //Set the left-side image to display the image from the given url.
@@ -103,17 +115,22 @@ TwoImageDisplay.prototype.updateSize = function() {
 				.extent([[0,0],[this.squareSize,this.squareSize]])
 				.translateExtent([[0,0],[this.squareSize,this.squareSize]]));
 
+	this.imageWrapper.selectAll('.canvasWrapper')
+		.style('width', this.squareSize+'px')
+		.style('height', this.squareSize+'px');
+
+
 	for (var f = 0; f < this.numImages; f++) {
 		if(this.images[f].img.src) {
 			this.images[f].context.drawImage(this.images[f].img, 0, 0, this.squareSize, this.squareSize);
 		}
 
-		if (f == this.numImages - 1) {
-			this.images[f].imageWrapper.style('right', '0px');
-		}
-		else {
-			this.images[f].imageWrapper.style('left', '' + ((100/this.numImages)*f) + '%');
-		}
+		//if (f == this.numImages - 1) {
+		//	this.images[f].imageWrapper.style('right', halfWidth+'px');
+		//}
+		//else {
+			this.images[f].imageWrapper.style('left', '' + (this.squareSize*f) + 'px');
+		//}
 	}
 	/*
 	if (this.leftImg.src)

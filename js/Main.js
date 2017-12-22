@@ -129,7 +129,7 @@ function load() {
 	console.log(db.name);
 
 	//Ignore data urls and options in chart
-	var filter = ['visar_file','visar_file1','visar_file2',
+	var filter = ['Sample','visar_file','visar_file1','visar_file2',
 				'visar_xCol','visar_yCol','visar1_xCol','visar1_yCol',
 				'visar2_xCol','visar2_yCol','visar_delimiter',
 				'diffraction_file','diffraction_file1','diffraction_file2',
@@ -172,7 +172,7 @@ function doneLoading() {
 			   				.attr("max", chart.results.length - 1)
 			   				.property("value", "0")
 			   				.style("float", "left")
-			   				.style("width", "80%");
+			   				.style("width", "70%");
 			   		sliderText = sliderDiv.append("input")
 			   				.attr("type","text")
 			   				.attr("value", chart.results[0]["Run #"])
@@ -301,7 +301,6 @@ $('.socketOverlay')
 
 			imageDisplays.forEach(function(item) {
 				if (currentView.attr("id") == item.key + "_Container") {
-					console.log("again", item.key);
 					currentView.insertBefore('#'+item.key+'_SocketOverlay');
 					$('#'+item.key+'_SocketOverlay').attr('mode','filled');
 					item.display.updateSize();
