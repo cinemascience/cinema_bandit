@@ -20,6 +20,7 @@ A multi-view application for analysis and visualization of experimental data
 ## Formatting Data for Bandit
 * Data for Bandit is a SpecD Cinema Database with some added dimensions used to load data into the viewer.
 * Not all extra dimensions are necessary, but will be required to load Visar, Diffraction and/or diffraction images.
+
 ### Dimensions regarding Visar data
 * **visar\_file**: A url to the file containing visar data for this result.
 * **visar\_file1**: If specifying two visar data points for one result, this can be used to specify the URL of the first file instead of **visar\_file**.
