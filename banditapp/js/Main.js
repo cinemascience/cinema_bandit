@@ -40,7 +40,7 @@ var selectedData;
 //Load databases.json and register databases into the database selection
 //Then load the first one
 var jsonRequest = new XMLHttpRequest();
-jsonRequest.open("GET",'databases.json',true);
+jsonRequest.open("GET",'banditapp/databases.json',true);
 jsonRequest.onreadystatechange = function() {
 	if (jsonRequest.readyState === 4) {
 		if (jsonRequest.status === 200 || jsonRequest.status === 0) {
