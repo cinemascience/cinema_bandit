@@ -1,12 +1,12 @@
-#BANDIT
-##Version 1.1
+# BANDIT
+## Version 1.1
 
 A multi-view application for analysis and visualization of experimental data
 
-###NOTE: Does not come with any data. Will not run without adding data.
-###See databases.json for a template on adding new data
+### NOTE: Does not come with any data. Will not run without adding data.
+### See databases.json for a template on adding new data
 
-##Usage
+## Usage
 * Select the dataset you wish to load in the drop-down menu in the header. (The first option will be loaded by default)
 * The top part of the page contains a parallel coordinates chart displaying all the data points and their parameters. Filter the selection of data points by click-and-dragging a selection along one or more of the axes.
 * The chart can be resized vertically by click-and-dragging the bar beneath it.
@@ -17,7 +17,7 @@ A multi-view application for analysis and visualization of experimental data
 * With the Zoom/Pan tool selected, click on a data point to select it. This selection will persist even when mousing over other points or off the graph. Click on another data point to change the selection or click in a blank spot on the graph to clear it.
 * With the Diffraction Image view active, scroll over one of the images to zoom on both of them. Click-and-drag to pan.
 
-##Formatting Data for Bandit
+## Formatting Data for Bandit
 * Data for Bandit is a SpecD Cinema Database with some added dimensions used to load data into the viewer.
 * Not all extra dimensions are necessary, but will be required to load Visar, Diffraction and/or diffraction images.
 ###Dimensions regarding Visar data
@@ -42,17 +42,17 @@ A multi-view application for analysis and visualization of experimental data
 * **diffraction1\_yCol**: If a file is specified with **diffraction1\_file**, then this specifies the number of the column in the file (beginning at zero) to read from for the y-axis of the diffraction data. If undefined, will use first two columns for x and y respectively. (overrides xCol being undefined)
 * **diffraction2\_yCol**: If a file is specified with **diffraction2\_file**, then this specifies the number of the column in the file (beginning at zero) to read from for the y-axis of the diffraction data. If undefined, will use first two columns for x and y respectively. (overrides xCol being undefined)
 * **diffraction\_delimiter**: The character to use to deliminate tokens in the diffraction file.
-###Dimensions regarding Diffraction Images
+### Dimensions regarding Diffraction Images
 * **diffraction\_image**: The url to the first diffraction image for this result
 * **diffraction\_image1**: Can be used instead of **diffraction\_image**.
 * **diffraction\_image2**: The url to the second diffraction image for this result.
 
-##Issues
+## Issues
 * On Safari, the browser may reach a limit for files opened (Safari does not release files from file:// requests until the page is closed) and refuse to load more data when loading particularly large data sets.
 
-##Changelog
-###Version 1.1
+## Changelog
+### Version 1.1
  * Significant performance improvements. Data is gradually streamed in while it loads/draws so more hangups
  * Generalized data-loading. Can now view any properly-formatted dataset.
-###Version 1.0
+### Version 1.0
  * Initial Release
