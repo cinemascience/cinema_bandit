@@ -129,7 +129,7 @@ function load() {
 	console.log(db.name);
 
 	//Ignore data urls and options in chart
-	var filter = ['Sample','visar_file','visar_file1','visar_file2',
+	var filter = ['Comments','Sample','visar_file','visar_file1','visar_file2',
 				'visar_xCol','visar_yCol','visar1_xCol','visar1_yCol',
 				'visar2_xCol','visar2_yCol','visar_delimiter',
 				'diffraction_file','diffraction_file1','diffraction_file2',
