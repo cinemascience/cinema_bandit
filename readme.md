@@ -17,6 +17,16 @@ A multi-view application for analysis and visualization of experimental data
 * With the Zoom/Pan tool selected, click on a data point to select it. This selection will persist even when mousing over other points or off the graph. Click on another data point to change the selection or click in a blank spot on the graph to clear it.
 * With the Diffraction Image view active, scroll over one of the images to zoom on both of them. Click-and-drag to pan.
 
+## How to Build and Install
+* Build the external cinema components:
+  ```
+  make
+  ```
+* Install the application to a project location (default install path is build/install):
+  ```
+  make install INSTALL_PREFIX=/path/to/project_directory
+  ```
+
 ## Formatting Data for Bandit
 * Data for Bandit is a SpecD Cinema Database with some added dimensions used to load data into the viewer.
 * Not all extra dimensions are necessary, but will be required to load Visar, Diffraction and/or diffraction images.
