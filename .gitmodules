@@ -1,0 +1,3 @@
+[submodule "ext/cinema_components"]
+	path = ext/cinema_components
+	url = https://github.com/cinemascience/cinema_components.git

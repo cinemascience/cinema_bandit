@@ -1,13 +1,5 @@
-_1DSpectra
-GF*
-LANL*
-visar*
-simresults*
-Ti-data*
-Boetler*
 *~
 #*
-lib/NewLineChart.js
-css/lineChart.css
 .DS_Store
 data
+build

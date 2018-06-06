@@ -21,6 +21,7 @@ var chart;//parallel coordinates chart
 var diffractionChart;
 var diffractionImageDisplay;
 var visarChart;
+var database;
 
 // colors
 var Visar_second = "red";
@@ -116,15 +117,21 @@ function load() {
 				'diffraction2_xCol','diffraction2_yCol','diffraction_delimiter',
 				'diffraction_image','diffraction_image1','diffraction_image2']
 
-	chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
+	/*chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
 										db.directory+'/data.csv',
 										filter,
-										doneLoading);
+										doneLoading);*/
+	//First create a database
+	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading);
 }
 
 //Called when parallel coordinates chart finishes loading
 function doneLoading() {
 	chartLoaded = true;
+
+	chart = new CINEMA_COMPONENTS.PcoordSVG($('#svgContainer')[0], database,/visar*|diffraction*/);
+
+	chart.results = database.data;
 
 	//Add listeners for chart
 	chart.dispatch.on('selectionchange', onSelectionChange);
@@ -335,8 +342,17 @@ function onInclude(i) {
 function onMouseOverChange(i, event) {
 	//The parallel coordiantes chart does the highlighting by itself,
 	//so the highlight isn't called if the mouse over was triggered by it.
-	if (this !== chart && chartLoaded) {
-		chart.setHighlight(i);
+	var highlightedPaths = [];
+	if (i) {
+		highlightedPaths = highlightedPaths.concat([i]);
+	}
+	if (selectedData) {
+		highlightedPaths = highlightedPaths.concat([selectedData]);
+	}
+
+
+	if (chartLoaded) {
+		chart.setHighlightedPaths(highlightedPaths);
 	}
 
 	if (i != null) {
@@ -378,7 +394,9 @@ function onMouseClick(i, event) {
 		chart.overlayPathData = [{data: chart.results[i]}];
 	else
 		chart.overlayPathData = [];
-	chart.updateOverlayPaths(true);
+
+	chart.setHighlightedPaths([i]);
+	//chart.updateOverlayPaths(true);
 }
 
 //Called when the size of the top part of the screen is changed.
