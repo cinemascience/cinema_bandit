@@ -122,7 +122,7 @@ function load() {
 										filter,
 										doneLoading);*/
 	//First create a database
-	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading);
+	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null, onDatabaseUpdated);
 }
 
 //Called when parallel coordinates chart finishes loading
@@ -169,6 +169,13 @@ function doneLoading() {
 		diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'));
 		$('#diffractionImageSocketOverlay').attr('mode','filled');
 	}
+}
+
+function onDatabaseUpdated(updateInfo) {
+	console.log(updateInfo);
+	chart.updateSelection();
+	chart.redrawSelectedPaths();
+	chart.redrawHighlightedPaths();
 }
 
 //Set up dragging on the resize bar
