@@ -122,7 +122,7 @@ function load() {
 										filter,
 										doneLoading);*/
 	//First create a database
-	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null, onDatabaseUpdated);
+	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null, onDatabaseUpdate);
 }
 
 //Called when parallel coordinates chart finishes loading
@@ -171,11 +171,12 @@ function doneLoading() {
 	}
 }
 
-function onDatabaseUpdated(updateInfo) {
-	console.log(updateInfo);
-	chart.updateSelection();
-	chart.redrawSelectedPaths();
-	chart.redrawHighlightedPaths();
+function onDatabaseUpdate(updateInfo) {
+	if (updateInfo.added.length > 0) {
+		visarChart.loadData(updateInfo.added);
+		diffractionChart.loadData(updateInfo.added);
+		chart.updateSelection(true);
+	}
 }
 
 //Set up dragging on the resize bar
