@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Placeholder Database",
-		"directory": "myDatabase.cbd"
+		"name": "Sphere",
+		"directory": "examples/sphere_multi-image.cdb"
 	}
 ]
