@@ -1,6 +1,7 @@
 VERSION = 1.1
 CINEMA_DIR = ./cinema
 INSTALL_PREFIX?=build/install
+COMPONENTS_VERSION = 2.4.1
 
 all: external
 
@@ -11,9 +12,9 @@ submodule:
 	git submodule update --remote --recursive
 
 components: submodule
-	mkdir -p $(CINEMA_DIR)/components/2.4.1/js
-	cd ext/cinema_components/src; cat Database.js Component.js Glyph.js ImageSpread.js Pcoord.js PcoordCanvas.js PcoordSVG.js Query.js ScatterPlot.js ScatterPlotCanvas.js ScatterPlotSVG.js > ../../../$(CINEMA_DIR)/components/2.4.1/js/CinemaComponents.min.js
-	cp -rf ext/cinema_components/css $(CINEMA_DIR)/components/2.4.1/css
+	mkdir -p $(CINEMA_DIR)/components/${COMPONENTS_VERSION}/js
+	cd ext/cinema_components/src; cat Database.js Component.js Glyph.js ImageSpread.js Pcoord.js PcoordCanvas.js PcoordSVG.js Query.js ScatterPlot.js ScatterPlotCanvas.js ScatterPlotSVG.js > ../../../$(CINEMA_DIR)/components/${COMPONENTS_VERSION}/js/CinemaComponents.min.js
+	cp -rf ext/cinema_components/css $(CINEMA_DIR)/components/${COMPONENTS_VERSION}/css
 
 install: all
 	mkdir -p $(INSTALL_PREFIX)
