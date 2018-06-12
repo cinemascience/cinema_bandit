@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 /**
  * A component for viewing many data points all on a single graph.
  * Allows for zooming, filtering the selection of data, and erasing

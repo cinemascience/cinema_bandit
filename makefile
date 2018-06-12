@@ -1,26 +1,28 @@
-VERSION = 1.1
-CINEMA_DIR = ./cinema
-INSTALL_PREFIX?=build/install
-COMPONENTS_VERSION = 2.4.1
+FILES=LineChart.js TwoImageDisplay.js Main.js
+VERSION=$(shell cat version)
+OUTPUT_PREFIX=CinemaBandit.v$(VERSION).min
 
-all: external
+all: minify
+	sed -e '/<!-- bandit -->/,/<!-- bandit -->/c\\t<!-- bandit -->\n\t<link rel="stylesheet" href="css/$(OUTPUT_PREFIX).css">\n\t<script src="js/$(OUTPUT_PREFIX).js"></script>\n\t<!-- bandit -->' cinema_bandit.html > build/cinema_bandit.v$(VERSION).html
+	cp -f *.json build/
+	cp -rf examples build/
+	mkdir -p build/css
+	cp -f css/*.png build/css
 
-external: components
+minify:
+	mkdir -p build/js
+	mkdir -p build/css
+	cd js; cat $(FILES) | babel-minify > ../build/js/$(OUTPUT_PREFIX).js
+	cat css/*.css > build/css/$(OUTPUT_PREFIX).css
 
-submodule:
-	git submodule init
-	git submodule update --remote --recursive
+build/cinemascience.github.io:
+	cd build; git clone https://github.com/cinemascience/cinemascience.github.io.git
 
-components: submodule
-	mkdir -p $(CINEMA_DIR)/components/${COMPONENTS_VERSION}/js
-	cd ext/cinema_components/src; cat Database.js Component.js Glyph.js ImageSpread.js Pcoord.js PcoordCanvas.js PcoordSVG.js Query.js ScatterPlot.js ScatterPlotCanvas.js ScatterPlotSVG.js > ../../../$(CINEMA_DIR)/components/${COMPONENTS_VERSION}/js/CinemaComponents.min.js
-	cp -rf ext/cinema_components/css $(CINEMA_DIR)/components/${COMPONENTS_VERSION}/css
-
-install: all
-	mkdir -p $(INSTALL_PREFIX)
-	cp -rf $(CINEMA_DIR) $(INSTALL_PREFIX)/
-	cp -f cinema_bandit.html $(INSTALL_PREFIX)/cinema_bandit-$(VERSION).html
-	cp -rf *.json $(INSTALL_PREFIX)/
+deploy: minify build/cinemascience.github.io
+	cd build/cinemascience.github.io; git pull
+	cp -f build/css/$(OUTPUT_PREFIX).* build/cinemascience.github.io/release
+	cp -f build/js/$(OUTPUT_PREFIX).* build/cinemascience.github.io/release
+	cd build/cinemascience.github.io; git add .; git commit -m "Updated Cinema Bandit version $(VERSION)."; git push
 
 clean:
 	rm -rf build

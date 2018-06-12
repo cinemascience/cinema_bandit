@@ -1,3 +1,4 @@
+//'use strict';
 /**
  * Main script for Bandit Viewer
  * 
@@ -23,6 +24,7 @@ var diffractionImageDisplay;
 var visarChart;
 var database;
 
+
 // colors
 var Visar_second = "red";
 var Visar_first  = "blue";
@@ -37,6 +39,10 @@ var db;
 var alwaysHighlighted = [];
 //The index of the selected data point (a data point is selected by clicking on it)
 var selectedData;
+
+var rtime;
+var timeout = false;
+var delta = 200;
 
 //Load databases.json and register databases into the database selection
 //Then load the first one
@@ -60,9 +66,128 @@ jsonRequest.onreadystatechange = function() {
 
 //Load data once DOM has finished loading
 $(document).ready(function() {
+});
+
+function startBandit() {
+	//Set up dragging on the resize bar
+	var resizeDrag = d3.drag()
+		.on('start', function() {
+			d3.select(this).attr('mode', 'dragging');
+		})
+		.on('drag', function() {
+			var headerRect = d3.select('#header').node().getBoundingClientRect();
+			d3.select('#svgArea').style('height',(d3.event.y - headerRect.height)+'px');
+			updateBottomHalf();
+		})
+		.on('end', function() {
+			d3.select(this).attr('mode', 'default');
+			chart.updateSize();
+			if (diffractionChart)
+				diffractionChart.updateSize();
+			if (visarChart)
+				visarChart.updateSize();
+			if (diffractionImageDisplay)
+				diffractionImageDisplay.updateSize();
+		});
+	d3.select('#resizeBar').call(resizeDrag);
+
+	//Set up switching the main view when a socket overlay is clicked
+	//(Jquery is used here because d3 does not allow for easily detaching and reattaching elements)
+	$('.socketOverlay')
+		.on('click', function() {
+			if ($(this).attr('mode') == 'filled') {
+				var currentView = $('#mainViewSocket .viewContainer');
+				var socketContents = $(this).parent().children('.viewContainer');
+				//place current view back into its socket
+				switch (currentView.attr('id')) {
+					case "visarContainer":
+						currentView.insertBefore('#visarSocketOverlay');
+						$('#visarSocketOverlay').attr('mode','filled');
+						visarChart.updateSize();
+						break;
+					case "diffractionContainer":
+						currentView.insertBefore('#diffractionSocketOverlay');
+						$('#diffractionSocketOverlay').attr('mode','filled');
+						diffractionChart.updateSize();
+						break;
+					case "diffractionImageContainer":
+						currentView.insertBefore('#diffractionImageSocketOverlay');
+						$('#diffractionImageSocketOverlay').attr('mode','filled');
+						diffractionImageDisplay.updateSize();
+						/*$('#toolbar').slideDown(500);
+						$('#resultsArea').animate({top: '65px'},callback=function() {
+							if (socketContents.attr('id') == 'visarContainer')
+								visarChart.updateSize();
+							else
+								diffractionChart.updateSize();
+						});*/
+				}
+				//Place socket contents into main view
+				$('#mainViewSocket').append(socketContents);
+				$(this).attr('mode',"empty");
+				switch (socketContents.attr('id')) {
+					case "visarContainer":
+						visarChart.updateSize();
+						break;
+					case "diffractionContainer":
+						diffractionChart.updateSize();
+						break;
+					case "diffractionImageContainer":
+						$('#toolbar').slideUp(500);
+						$('#resultsArea').animate({top: '5px'},callback=function() {
+							diffractionImageDisplay.updateSize();
+						});
+				}
+			}
+		});
+
+	//Set up switching between tools
+	$('.tool')
+		.on('click', function() {
+			if ($(this).attr('mode') == 'unselected') {
+				$('.tool[mode="selected"]').attr('mode','unselected');
+				$(this).attr('mode','selected');
+				switch ($(this).attr('id')) {
+					case "zoomTool":
+						if (visarChart)
+							visarChart.setMode("zoom");
+						if (diffractionChart)
+							diffractionChart.setMode("zoom");
+						$('#tooltip').text("Scroll to zoom, click-and-drag to pan.");
+						break;
+					case "eraseTool":
+						if (visarChart)
+							visarChart.setMode("erase");
+						if (diffractionChart)
+							diffractionChart.setMode("erase");
+						$('#tooltip').text("Drag over results to grey them out.");
+						break;
+					case "includeTool":
+						if (visarChart)
+							visarChart.setMode("include");
+						if (diffractionChart)
+							diffractionChart.setMode("include");
+						$('#tooltip').text("Drag over erased results to see them again");
+				}
+			}
+		})
+
+	//When window is resized, wait for a little bit
+	//before calling updateSize methods on charts.
+	//This keeps the methods from being called repeatedly
+	//while resizing the window.
+	//https://stackoverflow.com/a/5926068
+	$(window).resize(function() {
+		rtime = new Date();
+		if (timeout === false) {
+			timeout = true;
+			setTimeout(resizeend, delta);
+		}
+	});
+
 	updateBottomHalf();
 	jsonRequest.send(null);
-});
+}
 
 //Load data based on selected dataset.
 //Called whenever selected dataset is changed
@@ -179,124 +304,6 @@ function onDatabaseUpdate(updateInfo) {
 	}
 }
 
-//Set up dragging on the resize bar
-var resizeDrag = d3.drag()
-	.on('start', function() {
-		d3.select(this).attr('mode', 'dragging');
-	})
-	.on('drag', function() {
-		var headerRect = d3.select('#header').node().getBoundingClientRect();
-		d3.select('#svgArea').style('height',(d3.event.y - headerRect.height)+'px');
-		updateBottomHalf();
-	})
-	.on('end', function() {
-		d3.select(this).attr('mode', 'default');
-		chart.updateSize();
-		if (diffractionChart)
-			diffractionChart.updateSize();
-		if (visarChart)
-			visarChart.updateSize();
-		if (diffractionImageDisplay)
-			diffractionImageDisplay.updateSize();
-	});
-d3.select('#resizeBar').call(resizeDrag);
-
-//Set up switching the main view when a socket overlay is clicked
-//(Jquery is used here because d3 does not allow for easily detaching and reattaching elements)
-$('.socketOverlay')
-	.on('click', function() {
-		if ($(this).attr('mode') == 'filled') {
-			var currentView = $('#mainViewSocket .viewContainer');
-			var socketContents = $(this).parent().children('.viewContainer');
-			//place current view back into its socket
-			switch (currentView.attr('id')) {
-				case "visarContainer":
-					currentView.insertBefore('#visarSocketOverlay');
-					$('#visarSocketOverlay').attr('mode','filled');
-					visarChart.updateSize();
-					break;
-				case "diffractionContainer":
-					currentView.insertBefore('#diffractionSocketOverlay');
-					$('#diffractionSocketOverlay').attr('mode','filled');
-					diffractionChart.updateSize();
-					break;
-				case "diffractionImageContainer":
-					currentView.insertBefore('#diffractionImageSocketOverlay');
-					$('#diffractionImageSocketOverlay').attr('mode','filled');
-					diffractionImageDisplay.updateSize();
-					/*$('#toolbar').slideDown(500);
-					$('#resultsArea').animate({top: '65px'},callback=function() {
-						if (socketContents.attr('id') == 'visarContainer')
-							visarChart.updateSize();
-						else
-							diffractionChart.updateSize();
-					});*/
-			}
-			//Place socket contents into main view
-			$('#mainViewSocket').append(socketContents);
-			$(this).attr('mode',"empty");
-			switch (socketContents.attr('id')) {
-				case "visarContainer":
-					visarChart.updateSize();
-					break;
-				case "diffractionContainer":
-					diffractionChart.updateSize();
-					break;
-				case "diffractionImageContainer":
-					$('#toolbar').slideUp(500);
-					$('#resultsArea').animate({top: '5px'},callback=function() {
-						diffractionImageDisplay.updateSize();
-					});
-			}
-		}
-	});
-
-//Set up switching between tools
-$('.tool')
-	.on('click', function() {
-		if ($(this).attr('mode') == 'unselected') {
-			$('.tool[mode="selected"]').attr('mode','unselected');
-			$(this).attr('mode','selected');
-			switch ($(this).attr('id')) {
-				case "zoomTool":
-					if (visarChart)
-						visarChart.setMode("zoom");
-					if (diffractionChart)
-						diffractionChart.setMode("zoom");
-					$('#tooltip').text("Scroll to zoom, click-and-drag to pan.");
-					break;
-				case "eraseTool":
-					if (visarChart)
-						visarChart.setMode("erase");
-					if (diffractionChart)
-						diffractionChart.setMode("erase");
-					$('#tooltip').text("Drag over results to grey them out.");
-					break;
-				case "includeTool":
-					if (visarChart)
-						visarChart.setMode("include");
-					if (diffractionChart)
-						diffractionChart.setMode("include");
-					$('#tooltip').text("Drag over erased results to see them again");
-			}
-		}
-	})
-
-//When window is resized, wait for a little bit
-//before calling updateSize methods on charts.
-//This keeps the methods from being called repeatedly
-//while resizing the window.
-//https://stackoverflow.com/a/5926068
-var rtime;
-var timeout = false;
-var delta = 200;
-$(window).resize(function() {
-	rtime = new Date();
-	if (timeout === false) {
-		timeout = true;
-		setTimeout(resizeend, delta);
-	}
-});
 function resizeend() {
 	if (new Date() - rtime < delta) {
 		setTimeout(resizeend, delta);

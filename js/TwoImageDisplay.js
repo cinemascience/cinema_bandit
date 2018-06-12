@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 /**
  * A component to view two square images side-by-side.
  * Allows for zooming on images
