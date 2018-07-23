@@ -44,6 +44,9 @@ var rtime;
 var timeout = false;
 var delta = 200;
 
+var refreshBySizeInterval = false;
+var refreshAllInterval = false;
+
 //Load databases.json and register databases into the database selection
 //Then load the first one
 var jsonRequest = new XMLHttpRequest();
@@ -247,7 +250,7 @@ function load() {
 										filter,
 										doneLoading);*/
 	//First create a database
-	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null, onDatabaseUpdate);
+	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null);
 }
 
 //Called when parallel coordinates chart finishes loading
@@ -262,6 +265,17 @@ function doneLoading() {
 	chart.dispatch.on('selectionchange', onSelectionChange);
 	chart.dispatch.on('mouseover', onMouseOverChange);
 	chart.dispatch.on('click',onMouseClick);
+
+	//Monitor database for data updates
+	database.dispatch.on('dataUpdated', onDataUpdated);
+	// Create two intervals.  Every 5 seconds we see if the file size has changed
+	// and every 30 seconds, we load the full data to see if anything has changed.
+	refreshBySizeInterval = d3.interval(function(duration) {
+		database.refreshData(false);
+	}, 5*1000);
+	refreshAllInterval = d3.interval(function(duration) {
+		database.refreshData(true);
+	}, 30*1000);
 
 	//Create charts for data
 	var resultIndices = Array.apply(null, Array(chart.results.length)).map(function (_, i) {return i;});
@@ -296,7 +310,10 @@ function doneLoading() {
 	}
 }
 
-function onDatabaseUpdate(updateInfo) {
+function onDataUpdated(updateInfo) {
+	chart.updateData();
+	chart.results = database.data;
+
 	if (updateInfo.added.length > 0) {
 		visarChart.loadData(updateInfo.added);
 		diffractionChart.loadData(updateInfo.added);
