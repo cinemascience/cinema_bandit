@@ -14,7 +14,7 @@ var BaseLineColor = "grey";
 
 //Create a new line chart and append it to the given parent.
 //Uses function provided by getData to retrieve data files when loading
-function LineChart(parent, getData) {
+function LineChart(parent, getData, config) {
 
 	//Sizing
 	this.parent = parent;
@@ -150,6 +150,7 @@ function LineChart(parent, getData) {
 
 	//Data variables
 	this.getData = getData;
+	this.config = config;
 	this.fullDsList = [];
 	this.loadedData = {};
 	this.extentX = [];
@@ -628,7 +629,7 @@ LineChart.prototype.loadSingleData = function(index, callback) {
 	// columnY: Specify which column of data in the file to use for the y-axis of the line
 	//	(Set to -1 to just use first two columns for x and y, respectively)
 	// delimiter: Specifiy the character used to deliminate data in the file
-	var d = this.getData(index);
+	var d = this.getData(index, this.config);
 
 	if (d == null) {
 		callback(false);
@@ -667,7 +668,7 @@ LineChart.prototype.loadSingleData = function(index, callback) {
 				if (dataSet.columnY >= 0) {
 					rows.forEach(function(row, index) {
 						var xval = index;
-						if (dataSet.columnX >= 0) {
+						if (dataSet.columnX && dataSet.columnX >= 0) {
 							xval = row[dataSet.columnX];
 						}
 						points.push({x : xval, y : row[dataSet.columnY]});

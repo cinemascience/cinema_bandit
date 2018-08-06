@@ -1,6 +1,105 @@
 [
 	{
+		"name": "Sphere0",
+		"directory": "examples/sphere_multi-image.cdb",
+		"info": [
+			{
+				"name": "visar",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_visar1",
+						"xcol": null,
+						"ycol": 0,
+						"delimiter": null
+					},
+					{
+						"column": "FILE_visar2",
+						"xcol": null,
+						"ycol": 1,
+						"delimiter": null
+					}
+				]
+			}
+		]
+	},
+	{
 		"name": "Sphere",
-		"directory": "examples/sphere_multi-image.cdb"
+		"directory": "examples/sphere_multi-image.cdb",
+		"info": [
+			{
+				"name": "Visar",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_visar1",
+						"xcol": null,
+						"ycol": 0,
+						"delimiter": null
+					},
+					{
+						"column": "FILE_visar2",
+						"xcol": null,
+						"ycol": 1,
+						"delimiter": null
+					}
+				]
+			},
+			{
+				"name": "Diffraction Image",
+				"type": "image",
+				"data": 
+				[
+					"FILE_diffraction_image1",
+					"FILE_diffraction_image2"
+				]
+			},
+			{
+				"name": "Diffraction Graph",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_diffraction1",
+						"xcol": null,
+						"ycol": 0,
+						"delimiter": null
+					},
+					{
+						"column": "FILE_diffraction2",
+						"xcol": null,
+						"ycol": 1,
+						"delimiter": null
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Sphere2",
+		"directory": "examples/sphere_multi-image.cdb",
+		"info": [
+			{
+				"name": "Visar",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_visar1",
+						"xcol": null,
+						"ycol": 0,
+						"delimiter": null
+					},
+					{
+						"column": "FILE_visar2",
+						"xcol": null,
+						"ycol": 1,
+						"delimiter": null
+					}
+				]
+			}
+		]
 	}
 ]

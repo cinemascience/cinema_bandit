@@ -101,8 +101,12 @@ function startBandit() {
 			if ($(this).attr('mode') == 'filled') {
 				var currentView = $('#mainViewSocket .viewContainer');
 				var socketContents = $(this).parent().children('.viewContainer');
+
+				currentView.insertBefore('#' + db.info[0].name + 'SocketOverlay');
+				$('#visarSocketOverlay').attr('mode','filled');
+				visarChart.updateSize();
 				//place current view back into its socket
-				switch (currentView.attr('id')) {
+				/*switch (currentView.attr('id')) {
 					case "visarContainer":
 						currentView.insertBefore('#visarSocketOverlay');
 						$('#visarSocketOverlay').attr('mode','filled');
@@ -124,12 +128,13 @@ function startBandit() {
 							else
 								diffractionChart.updateSize();
 						});*/
-				}
+				//}
 				//Place socket contents into main view
 				$('#mainViewSocket').append(socketContents);
 				$(this).attr('mode',"empty");
+
 				switch (socketContents.attr('id')) {
-					case "visarContainer":
+					case "VisarContainer":
 						visarChart.updateSize();
 						break;
 					case "diffractionContainer":
@@ -201,7 +206,7 @@ function load() {
 	$('#visarContainer').html('');
 	$('#diffractionContainer').html('');
 	$('#diffractionImageContainer').html('');
-
+	$('#sidebar').html('');
 
 	$('#toolbar').slideUp(500);
 
@@ -234,16 +239,39 @@ function load() {
 	selectedData = null;
 
 	db = databases[$('#database').get(0).value];
-	console.log(db.name);
+
+	var sidebar = d3.select('#sidebar');
+
+	for (var f = 0; f < db.info.length; f++) {
+		var item = db.info[f];
+		var socketContainer = sidebar.append('div')
+			.attr('class','sidebarThird')
+			.attr('id',item.name+'SocketContainer');
+		socketContainer.append('span')
+			.text(item.name);
+		var socket = socketContainer.append('div')
+			.attr('class','socket')
+			.attr('id',item.name+'Socket');
+		socket.append('div')
+			.attr('class','viewContainer')
+			.attr('id',item.name+'Container');
+		socket.append('div')
+			.attr('class','socketOverlay')
+			.attr('id',item.name+'SocketOverlay');
+		console.log(item.name);
+	}
 
 	//Ignore data urls and options in chart
-	var filter = ['visar_file','visar_file1','visar_file2',
+	/*var filter = ['visar_file','visar_file1','visar_file2',
 				'visar_xCol','visar_yCol','visar1_xCol','visar1_yCol',
 				'visar2_xCol','visar2_yCol','visar_delimiter',
 				'diffraction_file','diffraction_file1','diffraction_file2',
 				'diffraction_xCol','diffraction_yCol','diffraction1_xCol','diffraction1_yCol',
 				'diffraction2_xCol','diffraction2_yCol','diffraction_delimiter',
 				'diffraction_image','diffraction_image1','diffraction_image2']
+	*/
+	var filter = [];
+	console.log(filter);
 
 	/*chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
 										db.directory+'/data.csv',
@@ -281,33 +309,27 @@ function doneLoading() {
 	var resultIndices = Array.apply(null, Array(chart.results.length)).map(function (_, i) {return i;});
 
 	//Create Visar chart if visar data is present
-	if (chart.results[0].visar_file || chart.results[0].visar_file1 || chart.results[0].visar_file2) {
-		visarChart = new LineChart(d3.select('#visarContainer'), getVisarData);
-		visarChart.loadData(resultIndices);
-		visarChart.dispatch.on("mouseover", onMouseOverChange);
-		visarChart.dispatch.on("click",onMouseClick);
-		visarChart.dispatch.on("erase",onErase);
-		visarChart.dispatch.on("include",onInclude);
-		$('#visarSocketOverlay').attr('mode','filled');
-	}
+	visarChart = new LineChart(d3.select('#' + db.info[0].name + 'Container'), getLineData, db.info[0]);
+	visarChart.loadData(resultIndices);
+	visarChart.dispatch.on("mouseover", onMouseOverChange);
+	visarChart.dispatch.on("click",onMouseClick);
+	visarChart.dispatch.on("erase",onErase);
+	visarChart.dispatch.on("include",onInclude);
+	$('#' + db.info[0].name + 'SocketOverlay').attr('mode','filled');
 
 	//Create diffraction chart if data is present
-	if (chart.results[0].diffraction_file || chart.results[0].diffraction_file1 || chart.results[0].diffraction_file2) {
-		diffractionChart = new LineChart(d3.select('#diffractionContainer'), getDiffData);
-		diffractionChart.loadData(resultIndices);
-		diffractionChart.updateSize();
-		diffractionChart.dispatch.on("mouseover", onMouseOverChange);
-		diffractionChart.dispatch.on("click",onMouseClick);
-		diffractionChart.dispatch.on("erase",onErase);
-		diffractionChart.dispatch.on("include",onInclude);
-		$('#diffractionSocketOverlay').attr('mode','filled');
-	}
+	/*diffractionChart = new LineChart(d3.select('#diffractionContainer'), getLineData, db.info[2]);
+	diffractionChart.loadData(resultIndices);
+	diffractionChart.updateSize();
+	diffractionChart.dispatch.on("mouseover", onMouseOverChange);
+	diffractionChart.dispatch.on("click",onMouseClick);
+	diffractionChart.dispatch.on("erase",onErase);
+	diffractionChart.dispatch.on("include",onInclude);
+	$('#diffractionSocketOverlay').attr('mode','filled');
 
 	//Create diffraction images display if data is present
-	if (chart.results[0].diffraction_image || chart.results[0].diffraction_image1 || chart.results[0].diffraction_image2) {
-		diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'));
-		$('#diffractionImageSocketOverlay').attr('mode','filled');
-	}
+	diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'));
+	$('#diffractionImageSocketOverlay').attr('mode','filled');*/
 }
 
 function onDataUpdated(updateInfo) {
@@ -393,7 +415,7 @@ function onMouseOverChange(i, event) {
 		if (visarChart)
 			visarChart.setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
 		if (diffractionImageDisplay) {
-			var images = getImages(i);
+			var images = getImages(i, db.info[1]);
 			diffractionImageDisplay.setLeftImage(images[0]);
 			diffractionImageDisplay.setRightImage(images[1]);
 		}
@@ -405,7 +427,7 @@ function onMouseOverChange(i, event) {
 			visarChart.setHighlight([selectedData].concat(alwaysHighlighted));
 		//Revert images to those of the selected data
 		if (selectedData != null && diffractionImageDisplay) {
-			var images = getImages(selectedData);
+			var images = getImages(selectedData, db.info[1]);
 			diffractionImageDisplay.setLeftImage(images[0]);
 			diffractionImageDisplay.setRightImage(images[1]);
 		}
@@ -442,60 +464,33 @@ function updateBottomHalf() {
 //Used by getData methods
 function pad(num, size){ return ('000000000' + num).substr(-size); }
 
-//Used by the diffraction chart to get data.
-//Returns the data file for the data represented by the given index.
-function getDiffData(i) {
-	if (chartLoaded) {
-		var result = chart.results[i];
-		var data = [];
-		if (result.diffraction_file)
-			data.push({file: db.directory+'/'+result.diffraction_file, color: Highlight, 
-						columnX:result.diffraction_xCol, columnY:result.diffraction_yCol,delimiter:result.diffraction_delimiter});
-		else if (result.diffraction_file1) {
-			data.push({file: db.directory+'/'+result.diffraction_file1, color: Visar_first,
-						columnX:result.diffraction1_xCol, columnY:result.diffraction1_yCol,delimiter:result.diffraction_delimiter});
-		}
-		if (result.diffraction_file2)
-				data.push({file: db.directory+'/'+result.diffraction_file2, color: Visar_second,
-						columnX:result.diffraction2_xCol, columnY:result.diffraction2_yCol,delimiter:result.diffraction_delimiter});
-		return data;
-	}
-
-	return null;
-}
-
 //Used by the visar chart to get data.
 //Returns the data file for the data represented by the given index.
-function getVisarData(i) {
+function getLineData(i, config) {
 	if (chartLoaded) {
 		var result = chart.results[i];
 		var data = [];
-		if (result.visar_file)
-			data.push({file: db.directory+'/'+result.visar_file, color: Highlight, 
-						columnX:result.visar_xCol, columnY:result.visar_yCol,delimiter:result.visar_delimiter});
-		else if (result.visar_file1) {
-			data.push({file: db.directory+'/'+result.visar_file1, color: Visar_first, 
-						columnX:result.visar1_xCol, columnY:result.visar1_yCol,delimiter:result.visar_delimiter});
+		var itemInfo = config.data;
+		for (var f = 0; f < itemInfo.length; f++) {
+			data.push({file: db.directory+'/'+result[itemInfo[f].column], color: f == 0 ? Visar_first : Visar_second, 
+						columnX:itemInfo[f].xcol, columnY:itemInfo[f].ycol,delimiter:itemInfo[f].delimiter});
 		}
-		if (result.visar_file2)
-				data.push({file: db.directory+'/'+result.visar_file2, color: Visar_second, 
-						columnX:result.visar2_xCol, columnY:result.visar2_yCol,delimiter:result.visar_delimiter});
+
 		return data;
 	}
 	return null;
 }
 
 //Get the filenames for diffraction images for the given data index.
-function getImages(i) {
+function getImages(i, config) {
 	if (chartLoaded) {
 		var result = chart.results[i];
-		var filename1, filename2;
-		if (result.diffraction_image)
-			filename1 = db.directory + "/" + result.diffraction_image;
-		else if (result.diffraction_image1)
-			filename1 = db.directory + "/" + result.diffraction_image1;
-		if (result.diffraction_image2)
-			filename2 = db.directory + "/" + result.diffraction_image2;
-		return [filename1,filename2];
+		var itemInfo = config.data;
+		var data = [];
+		for (var f = 0; f < itemInfo.length; f++) {
+			data.push(db.directory + "/" + result[itemInfo[f]]);
+		}
+
+		return data;
 	}
 }
