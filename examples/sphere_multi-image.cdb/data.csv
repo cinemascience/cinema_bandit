@@ -1,4 +1,4 @@
-theta,phi,FILE_visar1,FILE_visar2,FILE_diffraction_image1,FILE_diffraction_image2,FILE_diffraction1,FILE_diffraction2
+theta,phi,FILE_Visar_1,FILE_Visar_2,FILE_Diffraction_Image_1,FILE_Diffraction_Image_2,FILE_Diffraction_1,FILE_Diffraction_2
 0,-180,graph1/0_-180.txt,graph1/0_-180.txt,image/-180/0.png,image/-180/0.png,graph1/0_-180.txt,graph1/0_-180.txt
 0,-162,graph1/0_-162.txt,graph1/0_-162.txt,image/-162/0.png,image/-180/0.png,graph1/0_-162.txt,graph1/0_-162.txt
 0,-144,graph1/0_-144.txt,graph1/0_-144.txt,image/-144/0.png,image/-180/0.png,graph1/0_-144.txt,graph1/0_-144.txt

@@ -1,5 +1,9 @@
 [
 	{
+		"name": "Simple Database",
+		"directory": "examples/sphere_multi-image.cdb"
+	},
+	{
 		"name": "Sphere",
 		"directory": "examples/sphere_multi-image.cdb",
 		"info": [
@@ -9,13 +13,13 @@
 				"data": 
 				[
 					{
-						"column": "FILE_visar1",
+						"column": "FILE_Visar_1",
 						"xcol": null,
 						"ycol": 0,
 						"delimiter": null
 					},
 					{
-						"column": "FILE_visar2",
+						"column": "FILE_Visar_2",
 						"xcol": null,
 						"ycol": 1,
 						"delimiter": null
@@ -27,8 +31,8 @@
 				"type": "image",
 				"data": 
 				[
-					"FILE_diffraction_image1",
-					"FILE_diffraction_image2"
+					"FILE_Diffraction_Image_1",
+					"FILE_Diffraction_Image_2"
 				]
 			},
 			{
@@ -37,7 +41,7 @@
 				"data": 
 				[
 					{
-						"column": "FILE_diffraction1",
+						"column": "FILE_Diffraction_1",
 						"xcol": null,
 						"ycol": 0,
 						"delimiter": null
@@ -56,7 +60,7 @@
 				"data": 
 				[
 					{
-						"column": "FILE_visar1",
+						"column": "FILE_Visar_1",
 						"xcol": null,
 						"ycol": 0,
 						"delimiter": null
@@ -74,8 +78,8 @@
 				"type": "image",
 				"data": 
 				[
-					"FILE_diffraction_image1",
-					"FILE_diffraction_image2"
+					"FILE_Diffraction_Image_1",
+					"FILE_Diffraction_Image_2"
 				]
 			},
 			{
@@ -83,8 +87,8 @@
 				"type": "image",
 				"data": 
 				[
-					"FILE_diffraction_image1",
-					"FILE_diffraction_image1"
+					"FILE_Diffraction_Image_1",
+					"FILE_Diffraction_Image_1"
 				]
 			}
 		]
