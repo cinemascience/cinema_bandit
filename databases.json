@@ -1,35 +1,10 @@
 [
 	{
-		"name": "Sphere0",
-		"directory": "examples/sphere_multi-image.cdb",
-		"info": [
-			{
-				"name": "visar",
-				"type": "line",
-				"data": 
-				[
-					{
-						"column": "FILE_visar1",
-						"xcol": null,
-						"ycol": 0,
-						"delimiter": null
-					},
-					{
-						"column": "FILE_visar2",
-						"xcol": null,
-						"ycol": 1,
-						"delimiter": null
-					}
-				]
-			}
-		]
-	},
-	{
 		"name": "Sphere",
 		"directory": "examples/sphere_multi-image.cdb",
 		"info": [
 			{
-				"name": "Visar",
+				"name": "Curve 1",
 				"type": "line",
 				"data": 
 				[
@@ -48,7 +23,7 @@
 				]
 			},
 			{
-				"name": "Diffraction Image",
+				"name": "Sphere Image",
 				"type": "image",
 				"data": 
 				[
@@ -57,7 +32,7 @@
 				]
 			},
 			{
-				"name": "Diffraction Graph",
+				"name": "Curve 2",
 				"type": "line",
 				"data": 
 				[
@@ -66,23 +41,17 @@
 						"xcol": null,
 						"ycol": 0,
 						"delimiter": null
-					},
-					{
-						"column": "FILE_diffraction2",
-						"xcol": null,
-						"ycol": 1,
-						"delimiter": null
 					}
 				]
 			}
 		]
 	},
 	{
-		"name": "Sphere2",
+		"name": "Single Curve",
 		"directory": "examples/sphere_multi-image.cdb",
 		"info": [
 			{
-				"name": "Visar",
+				"name": "Curve",
 				"type": "line",
 				"data": 
 				[
@@ -91,13 +60,31 @@
 						"xcol": null,
 						"ycol": 0,
 						"delimiter": null
-					},
-					{
-						"column": "FILE_visar2",
-						"xcol": null,
-						"ycol": 1,
-						"delimiter": null
 					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Sphere Images",
+		"directory": "examples/sphere_multi-image.cdb",
+		"info": [
+			{
+				"name": "Dynamic and Static",
+				"type": "image",
+				"data": 
+				[
+					"FILE_diffraction_image1",
+					"FILE_diffraction_image2"
+				]
+			},
+			{
+				"name": "Both Dynamic",
+				"type": "image",
+				"data": 
+				[
+					"FILE_diffraction_image1",
+					"FILE_diffraction_image1"
 				]
 			}
 		]

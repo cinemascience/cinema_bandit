@@ -47,6 +47,8 @@ var delta = 200;
 var refreshBySizeInterval = false;
 var refreshAllInterval = false;
 
+var displays = [];
+
 //Load databases.json and register databases into the database selection
 //Then load the first one
 var jsonRequest = new XMLHttpRequest();
@@ -85,69 +87,11 @@ function startBandit() {
 		.on('end', function() {
 			d3.select(this).attr('mode', 'default');
 			chart.updateSize();
-			if (diffractionChart)
-				diffractionChart.updateSize();
-			if (visarChart)
-				visarChart.updateSize();
-			if (diffractionImageDisplay)
-				diffractionImageDisplay.updateSize();
-		});
-	d3.select('#resizeBar').call(resizeDrag);
-
-	//Set up switching the main view when a socket overlay is clicked
-	//(Jquery is used here because d3 does not allow for easily detaching and reattaching elements)
-	$('.socketOverlay')
-		.on('click', function() {
-			if ($(this).attr('mode') == 'filled') {
-				var currentView = $('#mainViewSocket .viewContainer');
-				var socketContents = $(this).parent().children('.viewContainer');
-
-				currentView.insertBefore('#' + db.info[0].name + 'SocketOverlay');
-				$('#visarSocketOverlay').attr('mode','filled');
-				visarChart.updateSize();
-				//place current view back into its socket
-				/*switch (currentView.attr('id')) {
-					case "visarContainer":
-						currentView.insertBefore('#visarSocketOverlay');
-						$('#visarSocketOverlay').attr('mode','filled');
-						visarChart.updateSize();
-						break;
-					case "diffractionContainer":
-						currentView.insertBefore('#diffractionSocketOverlay');
-						$('#diffractionSocketOverlay').attr('mode','filled');
-						diffractionChart.updateSize();
-						break;
-					case "diffractionImageContainer":
-						currentView.insertBefore('#diffractionImageSocketOverlay');
-						$('#diffractionImageSocketOverlay').attr('mode','filled');
-						diffractionImageDisplay.updateSize();
-						/*$('#toolbar').slideDown(500);
-						$('#resultsArea').animate({top: '65px'},callback=function() {
-							if (socketContents.attr('id') == 'visarContainer')
-								visarChart.updateSize();
-							else
-								diffractionChart.updateSize();
-						});*/
-				//}
-				//Place socket contents into main view
-				$('#mainViewSocket').append(socketContents);
-				$(this).attr('mode',"empty");
-
-				switch (socketContents.attr('id')) {
-					case "VisarContainer":
-						visarChart.updateSize();
-						break;
-					case "diffractionContainer":
-						diffractionChart.updateSize();
-						break;
-					case "diffractionImageContainer":
-						$('#toolbar').slideUp(500);
-						$('#resultsArea').animate({top: '5px'},callback=function() {
-							diffractionImageDisplay.updateSize();
-						});
-				}
+			for (var f = 0; f < displays.length; f++) {
+				displays[f].updateSize();
 			}
 		});
+	d3.select('#resizeBar').call(resizeDrag);	
 
 	//Set up switching between tools
 	$('.tool')
@@ -157,24 +101,27 @@ function startBandit() {
 				$(this).attr('mode','selected');
 				switch ($(this).attr('id')) {
 					case "zoomTool":
-						if (visarChart)
-							visarChart.setMode("zoom");
-						if (diffractionChart)
-							diffractionChart.setMode("zoom");
+						for (var f = 0; f < displays.length; f++) {
+							if (db.info[f].type == "line") {
+								displays[f].setMode("zoom");
+							}
+						}
 						$('#tooltip').text("Scroll to zoom, click-and-drag to pan.");
 						break;
 					case "eraseTool":
-						if (visarChart)
-							visarChart.setMode("erase");
-						if (diffractionChart)
-							diffractionChart.setMode("erase");
+						for (var f = 0; f < displays.length; f++) {
+							if (db.info[f].type == "line") {
+								displays[f].setMode("erase");
+							}
+						}
 						$('#tooltip').text("Drag over results to grey them out.");
 						break;
 					case "includeTool":
-						if (visarChart)
-							visarChart.setMode("include");
-						if (diffractionChart)
-							diffractionChart.setMode("include");
+						for (var f = 0; f < displays.length; f++) {
+							if (db.info[f].type == "line") {
+								displays[f].setMode("include");
+							}
+						}
 						$('#tooltip').text("Drag over erased results to see them again");
 				}
 			}
@@ -214,8 +161,10 @@ function load() {
 	$('#diffractionSocketOverlay').attr('mode','disabled');
 	$('#visarSocketOverlay').attr('mode','disabled');
 	$('#diffractionImageSocketOverlay').attr('mode','disabled');
-	var currentView = $('#mainViewSocket .viewContainer');
-	switch (currentView.attr('id')) {
+	//var currentView = 
+	$('#mainViewSocket').html('');
+	d3.select('#mainViewSocket').attr('class','socket');
+	/*switch (currentView.attr('id')) {
 		case "visarContainer":
 			currentView.insertBefore('#visarSocketOverlay');
 			break;
@@ -227,7 +176,7 @@ function load() {
 			//$('#toolbar').slideDown(500);
 			//$('#resultsArea').animate({top: '65px'});
 			break;
-	}
+	}*/
 
 	//Set selected tool to the Zoom/Pan tool if it isn't selected already
 	if ($('#zoomTool').attr('mode') != 'selected') {
@@ -246,20 +195,84 @@ function load() {
 		var item = db.info[f];
 		var socketContainer = sidebar.append('div')
 			.attr('class','sidebarThird')
-			.attr('id',item.name+'SocketContainer');
+			.attr('id','SocketContainer'+f);
 		socketContainer.append('span')
 			.text(item.name);
 		var socket = socketContainer.append('div')
 			.attr('class','socket')
-			.attr('id',item.name+'Socket');
+			.attr('id','Socket'+f);
 		socket.append('div')
 			.attr('class','viewContainer')
-			.attr('id',item.name+'Container');
+			.attr('id','Container'+f);
 		socket.append('div')
 			.attr('class','socketOverlay')
-			.attr('id',item.name+'SocketOverlay');
+			.attr('id','SocketOverlay'+f);
 		console.log(item.name);
 	}
+
+	//Set up switching the main view when a socket overlay is clicked
+	//(Jquery is used here because d3 does not allow for easily detaching and reattaching elements)
+	$('.socketOverlay')
+		.on('click', function() {
+			if ($(this).attr('mode') == 'filled') {
+				var currentView = $('#mainViewSocket .viewContainer');
+				var socketContents = $(this).parent().children('.viewContainer');
+				console.log(socketContents);
+
+
+				var currentViewId = currentView.attr('id');
+				if (currentViewId) {
+					var displayId = currentViewId[currentViewId.length-1];
+					console.log(currentViewId, displayId);
+					currentView.insertBefore('#SocketOverlay'+displayId);
+					$('#SocketOverlay' + displayId).attr('mode','filled');
+					displays[displayId].updateSize();
+				}
+				
+
+				//place current view back into its socket
+				/*switch (currentView.attr('id')) {
+					case "visarContainer":
+						currentView.insertBefore('#visarSocketOverlay');
+						$('#visarSocketOverlay').attr('mode','filled');
+						visarChart.updateSize();
+						break;
+					case "diffractionContainer":
+						currentView.insertBefore('#diffractionSocketOverlay');
+						$('#diffractionSocketOverlay').attr('mode','filled');
+						diffractionChart.updateSize();
+						break;
+					case "diffractionImageContainer":
+						currentView.insertBefore('#diffractionImageSocketOverlay');
+						$('#diffractionImageSocketOverlay').attr('mode','filled');
+						diffractionImageDisplay.updateSize();
+						/*$('#toolbar').slideDown(500);
+						$('#resultsArea').animate({top: '65px'},callback=function() {
+							if (socketContents.attr('id') == 'visarContainer')
+								visarChart.updateSize();
+							else
+								diffractionChart.updateSize();
+						});*/
+				//}
+				//Place socket contents into main view
+				$('#mainViewSocket').append(socketContents);
+				$(this).attr('mode',"empty");
+
+				var socketId = socketContents.attr('id');
+				socketId = socketId[socketId.length-1]
+				console.log()
+				if (db.info[socketId].type == "line") {
+					displays[socketId].updateSize();
+				}
+				else if (db.info[socketId].type == "image") {
+					console.log(socketId, db.info[socketId].type);
+					displays[socketId].updateSize();
+					/*$('#toolbar').slideUp(500);
+					$('#resultsArea').animate({top: '5px'},callback=function() {
+					});*/
+				}
+			}
+		});
 
 	//Ignore data urls and options in chart
 	/*var filter = ['visar_file','visar_file1','visar_file2',
@@ -308,14 +321,34 @@ function doneLoading() {
 	//Create charts for data
 	var resultIndices = Array.apply(null, Array(chart.results.length)).map(function (_, i) {return i;});
 
+	displays = [];
+
+	for (var f = 0; f < db.info.length; f++) {
+		if (db.info[f].type == "line") {
+			var display = new LineChart(d3.select('#Container'+f), getLineData, db.info[f]);
+			display.loadData(resultIndices);
+			display.dispatch.on("mouseover", onMouseOverChange);
+			display.dispatch.on("click",onMouseClick);
+			display.dispatch.on("erase",onErase);
+			display.dispatch.on("include",onInclude);
+			$('#SocketOverlay'+f).attr('mode','filled');
+			displays.push(display);
+		}
+		else if (db.info[f].type == "image") {
+			var display = new TwoImageDisplay(d3.select('#Container'+f));
+			displays.push(display);
+			$('#SocketOverlay'+f).attr('mode','filled');
+		}
+	}
+
 	//Create Visar chart if visar data is present
-	visarChart = new LineChart(d3.select('#' + db.info[0].name + 'Container'), getLineData, db.info[0]);
+	/*visarChart = new LineChart(d3.select('#Container'+0), getLineData, db.info[0]);
 	visarChart.loadData(resultIndices);
 	visarChart.dispatch.on("mouseover", onMouseOverChange);
 	visarChart.dispatch.on("click",onMouseClick);
 	visarChart.dispatch.on("erase",onErase);
 	visarChart.dispatch.on("include",onInclude);
-	$('#' + db.info[0].name + 'SocketOverlay').attr('mode','filled');
+	$('#SocketOverlay'+0).attr('mode','filled');*/
 
 	//Create diffraction chart if data is present
 	/*diffractionChart = new LineChart(d3.select('#diffractionContainer'), getLineData, db.info[2]);
@@ -337,8 +370,11 @@ function onDataUpdated(updateInfo) {
 	chart.results = database.data;
 
 	if (updateInfo.added.length > 0) {
-		visarChart.loadData(updateInfo.added);
-		diffractionChart.loadData(updateInfo.added);
+		for (var f = 0; f < displays.length; f++) {
+			if (db.info[f].type == "line") {
+				displays[f].loadData(updateInfo.added);
+			}
+		}
 		chart.updateSelection(true);
 	}
 }
@@ -349,22 +385,20 @@ function resizeend() {
 	} else {
 		timeout = false;
 		chart.updateSize();
-		if (diffractionChart)
-			diffractionChart.updateSize();
-		if (visarChart)
-			visarChart.updateSize();
-		if (diffractionImageDisplay)
-			diffractionImageDisplay.updateSize();
+		for (var f = 0; f < displays.length; f++) {
+			displays[f].updateSize();
+		}
 	}
 }
 
 //Called when selection in parallel coordinates chart changes.
 //Sets selection in visar and diffraction charts
 function onSelectionChange(query) {
-	if (visarChart)
-		visarChart.setSelection(query);
-	if (diffractionChart)
-		diffractionChart.setSelection(query);
+	for (var f = 0; f < displays.length; f++) {
+		if (db.info[f].type == "line") {
+			displays[f].setSelection(query);
+		}
+	}
 }
 
 //Called when either the visar or diffraction chart
@@ -410,26 +444,27 @@ function onMouseOverChange(i, event) {
 	}
 
 	if (i != null) {
-		if (diffractionChart)
-			diffractionChart.setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
-		if (visarChart)
-			visarChart.setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
-		if (diffractionImageDisplay) {
-			var images = getImages(i, db.info[1]);
-			diffractionImageDisplay.setLeftImage(images[0]);
-			diffractionImageDisplay.setRightImage(images[1]);
+		for (var f = 0; f < displays.length; f++) {
+			if (db.info[f].type == "line") {
+				displays[f].setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
+			}
+			else if (db.info[f].type == "image") {
+				var images = getImages(i, db.info[f]);
+				displays[f].setLeftImage(images[0]);
+				displays[f].setRightImage(images[1]);
+			}
 		}
 	}
 	else {//i is null when mousing over a blank area
-		if (diffractionChart)
-			diffractionChart.setHighlight([selectedData].concat(alwaysHighlighted));
-		if (visarChart)
-			visarChart.setHighlight([selectedData].concat(alwaysHighlighted));
-		//Revert images to those of the selected data
-		if (selectedData != null && diffractionImageDisplay) {
-			var images = getImages(selectedData, db.info[1]);
-			diffractionImageDisplay.setLeftImage(images[0]);
-			diffractionImageDisplay.setRightImage(images[1]);
+		for (var f = 0; f < displays.length; f++) {
+			if (db.info[f].type == "line") {
+				displays[f].setHighlight([selectedData].concat(alwaysHighlighted));
+			}
+			else if (db.info[f].type == "image" && selectedData != null) {
+				var images = getImages(i, db.info[f]);
+				displays[f].setLeftImage(images[0]);
+				displays[f].setRightImage(images[1]);
+			}
 		}
 	}
 }
@@ -438,10 +473,12 @@ function onMouseOverChange(i, event) {
 //Sets the selected data and highlights it.
 function onMouseClick(i, event) {
 	selectedData = i;
-	if (diffractionChart)
-		diffractionChart.setHighlight([selectedData].concat(alwaysHighlighted));
-	if (visarChart)
-		visarChart.setHighlight([selectedData].concat(alwaysHighlighted));
+
+	for (var f = 0; f < displays.length; f++) {
+		if (db.info[f].type == "line") {
+			displays[f].setHighlight([selectedData].concat(alwaysHighlighted));
+		}
+	}
 
 	//Selected data is shown in the parallel coordinates chart using its overlay paths system.
 	if (i != null)
