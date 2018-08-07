@@ -419,10 +419,10 @@ function onMouseOverChange(i, event) {
 
 	if (i != null) {
 		for (var f = 0; f < displays.length; f++) {
-			if (db.info[f].type == "line") {
+			if (db.info[f].type === "line") {
 				displays[f].setHighlight([selectedData].concat([i].concat(alwaysHighlighted)));
 			}
-			else if (db.info[f].type == "image") {
+			else if (db.info[f].type === "image") {
 				var images = getImages(i, db.info[f]);
 				displays[f].setLeftImage(images[0]);
 				displays[f].setRightImage(images[1]);
@@ -431,11 +431,11 @@ function onMouseOverChange(i, event) {
 	}
 	else {//i is null when mousing over a blank area
 		for (var f = 0; f < displays.length; f++) {
-			if (db.info[f].type == "line") {
+			if (db.info[f].type === "line") {
 				displays[f].setHighlight([selectedData].concat(alwaysHighlighted));
 			}
-			else if (db.info[f].type == "image" && selectedData != null) {
-				var images = getImages(i, db.info[f]);
+			else if (db.info[f].type === "image" && selectedData != null) {
+				var images = getImages(selectedData, db.info[f]);
 				displays[f].setLeftImage(images[0]);
 				displays[f].setRightImage(images[1]);
 			}
