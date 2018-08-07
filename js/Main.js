@@ -189,7 +189,55 @@ function load() {
 
 	db = databases[$('#database').get(0).value];
 
+	/*chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
+										db.directory+'/data.csv',
+										filter,
+										doneLoading);*/
+	//First create a database
+	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null);
+}
+
+//Called when parallel coordinates chart finishes loading
+function doneLoading() {
+	chartLoaded = true;
+
 	var sidebar = d3.select('#sidebar');
+
+	if (!db.info) {
+		var files = database.dimensions.filter(function(d) {
+            return (/^FILE/).test(d);
+        });
+
+        var prevTitle = '';
+        var prevFileName = '';
+        db.info = [];
+        var currentInfo = null;
+        files.forEach(function(file) {
+        	var title = file.substring(5, file.length-2).replace("_"," ");
+        	var fileName = database.data[0][file];
+        	var isLine = fileName.endsWith(".csv") || fileName.endsWith(".txt");
+
+        	if (!(prevTitle === title)) {
+        		currentInfo = {name: title, type: isLine ? "line" : "image", data: []};
+        		db.info.push(currentInfo);
+        	}
+        	if (isLine) {
+        		currentInfo.data.push({column: file, xcol:0, ycol:1});
+	        	if (prevFileName === fileName) {
+	        		currentInfo.data.forEach(function(item, index){
+	        			item.xcol = -1;
+	        			item.ycol = index;
+	        		});
+	        	}
+        	}
+        	else {
+        		currentInfo.data.push(file);
+        	}
+        	
+        	prevTitle = title;
+        	prevFileName = fileName;
+        });
+	}
 
 	for (var f = 0; f < db.info.length; f++) {
 		var item = db.info[f];
@@ -247,19 +295,7 @@ function load() {
 
 	var filter = [];
 
-	/*chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
-										db.directory+'/data.csv',
-										filter,
-										doneLoading);*/
-	//First create a database
-	database = new CINEMA_COMPONENTS.Database(db.directory,doneLoading, null);
-}
-
-//Called when parallel coordinates chart finishes loading
-function doneLoading() {
-	chartLoaded = true;
-
-	chart = new CINEMA_COMPONENTS.PcoordSVG($('#svgContainer')[0], database,/visar*|diffraction*/);
+	chart = new CINEMA_COMPONENTS.PcoordSVG($('#svgContainer')[0], database,/FILE*/);
 
 	chart.results = database.data;
 
