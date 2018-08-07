@@ -207,7 +207,6 @@ function load() {
 		socket.append('div')
 			.attr('class','socketOverlay')
 			.attr('id','SocketOverlay'+f);
-		console.log(item.name);
 	}
 
 	//Set up switching the main view when a socket overlay is clicked
@@ -217,55 +216,27 @@ function load() {
 			if ($(this).attr('mode') == 'filled') {
 				var currentView = $('#mainViewSocket .viewContainer');
 				var socketContents = $(this).parent().children('.viewContainer');
-				console.log(socketContents);
 
 
+				//place current view back into its socket
 				var currentViewId = currentView.attr('id');
 				if (currentViewId) {
 					var displayId = currentViewId[currentViewId.length-1];
-					console.log(currentViewId, displayId);
 					currentView.insertBefore('#SocketOverlay'+displayId);
 					$('#SocketOverlay' + displayId).attr('mode','filled');
 					displays[displayId].updateSize();
 				}
 				
-
-				//place current view back into its socket
-				/*switch (currentView.attr('id')) {
-					case "visarContainer":
-						currentView.insertBefore('#visarSocketOverlay');
-						$('#visarSocketOverlay').attr('mode','filled');
-						visarChart.updateSize();
-						break;
-					case "diffractionContainer":
-						currentView.insertBefore('#diffractionSocketOverlay');
-						$('#diffractionSocketOverlay').attr('mode','filled');
-						diffractionChart.updateSize();
-						break;
-					case "diffractionImageContainer":
-						currentView.insertBefore('#diffractionImageSocketOverlay');
-						$('#diffractionImageSocketOverlay').attr('mode','filled');
-						diffractionImageDisplay.updateSize();
-						/*$('#toolbar').slideDown(500);
-						$('#resultsArea').animate({top: '65px'},callback=function() {
-							if (socketContents.attr('id') == 'visarContainer')
-								visarChart.updateSize();
-							else
-								diffractionChart.updateSize();
-						});*/
-				//}
 				//Place socket contents into main view
 				$('#mainViewSocket').append(socketContents);
 				$(this).attr('mode',"empty");
 
 				var socketId = socketContents.attr('id');
 				socketId = socketId[socketId.length-1]
-				console.log()
 				if (db.info[socketId].type == "line") {
 					displays[socketId].updateSize();
 				}
 				else if (db.info[socketId].type == "image") {
-					console.log(socketId, db.info[socketId].type);
 					displays[socketId].updateSize();
 					/*$('#toolbar').slideUp(500);
 					$('#resultsArea').animate({top: '5px'},callback=function() {
@@ -274,17 +245,7 @@ function load() {
 			}
 		});
 
-	//Ignore data urls and options in chart
-	/*var filter = ['visar_file','visar_file1','visar_file2',
-				'visar_xCol','visar_yCol','visar1_xCol','visar1_yCol',
-				'visar2_xCol','visar2_yCol','visar_delimiter',
-				'diffraction_file','diffraction_file1','diffraction_file2',
-				'diffraction_xCol','diffraction_yCol','diffraction1_xCol','diffraction1_yCol',
-				'diffraction2_xCol','diffraction2_yCol','diffraction_delimiter',
-				'diffraction_image','diffraction_image1','diffraction_image2']
-	*/
 	var filter = [];
-	console.log(filter);
 
 	/*chart = new ParallelCoordinatesChart(d3.select('#svgContainer'),
 										db.directory+'/data.csv',
@@ -340,29 +301,6 @@ function doneLoading() {
 			$('#SocketOverlay'+f).attr('mode','filled');
 		}
 	}
-
-	//Create Visar chart if visar data is present
-	/*visarChart = new LineChart(d3.select('#Container'+0), getLineData, db.info[0]);
-	visarChart.loadData(resultIndices);
-	visarChart.dispatch.on("mouseover", onMouseOverChange);
-	visarChart.dispatch.on("click",onMouseClick);
-	visarChart.dispatch.on("erase",onErase);
-	visarChart.dispatch.on("include",onInclude);
-	$('#SocketOverlay'+0).attr('mode','filled');*/
-
-	//Create diffraction chart if data is present
-	/*diffractionChart = new LineChart(d3.select('#diffractionContainer'), getLineData, db.info[2]);
-	diffractionChart.loadData(resultIndices);
-	diffractionChart.updateSize();
-	diffractionChart.dispatch.on("mouseover", onMouseOverChange);
-	diffractionChart.dispatch.on("click",onMouseClick);
-	diffractionChart.dispatch.on("erase",onErase);
-	diffractionChart.dispatch.on("include",onInclude);
-	$('#diffractionSocketOverlay').attr('mode','filled');
-
-	//Create diffraction images display if data is present
-	diffractionImageDisplay = new TwoImageDisplay(d3.select('#diffractionImageContainer'));
-	$('#diffractionImageSocketOverlay').attr('mode','filled');*/
 }
 
 function onDataUpdated(updateInfo) {
