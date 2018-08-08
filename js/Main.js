@@ -222,7 +222,7 @@ function doneLoading() {
         		db.info.push(currentInfo);
         	}
         	if (isLine) {
-        		currentInfo.data.push({column: file, xcol:0, ycol:1});
+        		currentInfo.data.push({column: file, xcol:0, ycol:1, delimiter: fileName.endsWith(".csv") ? "," : null });
 	        	if (prevFileName === fileName) {
 	        		currentInfo.data.forEach(function(item, index){
 	        			item.xcol = -1;
@@ -484,7 +484,7 @@ function getLineData(i, config) {
 		var itemInfo = config.data;
 		for (var f = 0; f < itemInfo.length; f++) {
 			data.push({file: db.directory+'/'+result[itemInfo[f].column], color: f == 0 ? Visar_first : Visar_second, 
-						columnX:itemInfo[f].xcol, columnY:itemInfo[f].ycol,delimiter:itemInfo[f].delimiter});
+						columnX:itemInfo[f].xcol, columnY:itemInfo[f].ycol, delimiter:itemInfo[f].delimiter});
 		}
 
 		return data;

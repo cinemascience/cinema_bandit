@@ -657,6 +657,24 @@ LineChart.prototype.loadSingleData = function(index, callback) {
 					text = replaceAll(text,"  ","\t");
 				}
 
+				// If text is other delimited, convert to tab-delimited
+				if (dataSet.delimiter) {
+					var lines = text.split('\n');
+					text = '';
+					lines = lines.slice(2, lines.length);
+					lines.forEach(function(item, index) {
+						if (index == 0) {
+							text = lines[index].trim();
+						}
+						else {
+							if (index % 10 == 0) {
+								text = text + "\n" + lines[index].trim();
+							}
+						}
+					});
+					text = replaceAll(text,dataSet.delimiter,"\t");
+				}
+
 				//Parse into rows
 				var rows = d3.tsvParseRows(text).map(function(row) {
 					return row.map(function(value) {
