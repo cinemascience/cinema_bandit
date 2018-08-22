@@ -441,6 +441,8 @@ function onMouseOverChange(i, event) {
 			}
 		}
 	}
+
+	updateInfoPane(i, event);
 }
 
 //Called whenever a data point in any chart is clicked on
@@ -460,8 +462,11 @@ function onMouseClick(i, event) {
 	else
 		chart.overlayPathData = [];
 
+	updateInfoPane(i, event);
+
 	chart.setHighlightedPaths([i]);
 	//chart.updateOverlayPaths(true);
+
 }
 
 //Called when the size of the top part of the screen is changed.
@@ -483,8 +488,9 @@ function getLineData(i, config) {
 		var data = [];
 		var itemInfo = config.data;
 		for (var f = 0; f < itemInfo.length; f++) {
-			data.push({file: db.directory+'/'+result[itemInfo[f].column], color: f == 0 ? Visar_first : Visar_second, 
-						columnX:itemInfo[f].xcol, columnY:itemInfo[f].ycol, delimiter:itemInfo[f].delimiter});
+			var color = f == 0 ? Visar_first : Visar_second
+			data.push({file: db.directory+'/'+result[itemInfo[f].column], color: color, 
+						columnX:itemInfo[f].xcol, columnY:itemInfo[f].ycol, delimiter:itemInfo[f].delimiter/*, bgcolor: color*/});
 		}
 
 		return data;
@@ -503,5 +509,41 @@ function getImages(i, config) {
 		}
 
 		return data;
+	}
+}
+
+//Update the info pane according to the index of the data
+//being moused over
+function updateInfoPane(index, event) {
+	if (!index) {
+		d3.select('.infoPane').remove();
+		index = selectedData;
+	}
+	var pane = d3.select('.infoPane');
+	if (index != null && pane.empty()) {
+		pane = d3.select('body').append('div')
+			.attr('class', 'infoPane')
+	}
+	if (index != null) {
+		pane.html(function() {
+				var text = '';
+				var data = database.data[index]
+				for (i in data) {
+					if (!i.startsWith("FILE")) {
+						text += ('<b>'+i+':</b> ');
+						text += (data[i] + '<br>');
+					}
+				}
+				return text;
+			});
+		//Draw the info pane in the side of the window opposite the mouse
+		var leftHalf = (event.clientX <= window.innerWidth/2)
+		if (leftHalf)
+			pane.style('right', '30px');
+		else
+			pane.style('left', '30px');
+	}
+	else {
+		d3.select('.infoPane').remove();
 	}
 }

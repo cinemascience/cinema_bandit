@@ -371,7 +371,7 @@ LineChart.prototype.drawLines = function(context, dsList, color) {
 				context.strokeStyle = 'rgb('+r+','+g+','+b+')';//color
 			}
 			else {
-				context.strokeStyle = color;
+				context.strokeStyle = ds.dataSet.bgcolor ? ds.dataSet.bgcolor : color;
 			}
 		}
 		else {
