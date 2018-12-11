@@ -686,7 +686,7 @@ LineChart.prototype.loadSingleData = function(index, callback) {
 				if (dataSet.columnY >= 0) {
 					rows.forEach(function(row, index) {
 						var xval = index;
-						if (dataSet.columnX && dataSet.columnX >= 0) {
+						if (dataSet.columnX != null && dataSet.columnX >= 0) {
 							xval = row[dataSet.columnX];
 						}
 						points.push({x : xval, y : row[dataSet.columnY]});
