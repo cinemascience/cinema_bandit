@@ -94,11 +94,11 @@
 		]
 	},
 	{
-		"name": "Blakes Data",
+		"name": "Single image example",
 		"directory": "examples/blake_data.cdb",
 		"info": [
 			{
-				"name": "X-ray Diffraction Pattern",
+				"name": "Circles",
 				"type": "image-single",
 				"data": "FILE_image_path"
 			}
