@@ -336,6 +336,12 @@ function doneLoading() {
 			displays.push(display);
 			$('#SocketOverlay'+f).attr('mode','filled');
 		}
+		//AQ - Add ability to look at just a single image
+		else if (db.info[f].type == "image-single") {
+			var display = new SingleImageDisplay(d3.select('#Container'+f));
+			displays.push(display);
+			$('#SocketOverlay'+f).attr('mode','filled');
+		}
 	}
 }
 
@@ -427,6 +433,11 @@ function onMouseOverChange(i, event) {
 				displays[f].setLeftImage(images[0]);
 				displays[f].setRightImage(images[1]);
 			}
+			//AQ - Add section for single image
+			else if (db.info[f].type === "image-single") {
+				var images = getImage(i, db.info[f]);
+				displays[f].setImage(images[0]);
+			}
 		}
 	}
 	else {//i is null when mousing over a blank area
@@ -438,6 +449,11 @@ function onMouseOverChange(i, event) {
 				var images = getImages(selectedData, db.info[f]);
 				displays[f].setLeftImage(images[0]);
 				displays[f].setRightImage(images[1]);
+			}
+			//AQ - Add section for single image
+			else if (db.info[f].type === "image-single" && selectedData != null) {
+				var images = getImage(selectedData, db.info[f]);
+				displays[f].setImage(images[0]);
 			}
 		}
 	}
@@ -508,6 +524,17 @@ function getImages(i, config) {
 			data.push(db.directory + "/" + result[itemInfo[f]]);
 		}
 
+		return data;
+	}
+}
+
+//Get filename for a single diffraction image, at the given data index.
+function getImage(i, config) {
+	if (chartLoaded) {
+		var result = chart.results[i];
+		var itemInfo = config.data;
+		var data = [];
+		data.push(db.directory + "/" + result[itemInfo]);
 		return data;
 	}
 }

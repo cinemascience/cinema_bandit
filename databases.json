@@ -92,5 +92,16 @@
 				]
 			}
 		]
+	},
+	{
+		"name": "Blakes Data",
+		"directory": "examples/blake_data.cdb",
+		"info": [
+			{
+				"name": "X-ray Diffraction Pattern",
+				"type": "image-single",
+				"data": "FILE_image_path"
+			}
+		]
 	}
 ]
