@@ -35,6 +35,16 @@ There are two types of files that can be loaded in Bandit, time series data (.cs
 ## Issues
 * On Safari, the browser may reach a limit for files opened (Safari does not release files from file:// requests until the page is closed) and refuse to load more data when loading particularly large data sets.
 
+## Developing
+
+This requires yarn. Download and install it from https://yarnpkg.com
+
+Install dependecies using yarn:
+
+    yarn
+
+After that, you should be able to run `make`.
+
 ## Changelog
 ### Version 1.1
  * Significant performance improvements. Data is gradually streamed in while it loads/draws so more hangups
