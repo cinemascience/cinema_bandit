@@ -9,12 +9,12 @@ all: minify
 	cp -f *.json build/
 	cp -rf examples build/
 	mkdir -p build/$(OUTPUT_DIR)
-	cp -rf css/images build/$(OUTPUT_DIR)/
+	cp -rf cinema/bandit/$(VERSION)/css/images build/$(OUTPUT_DIR)/
 
 minify:
 	mkdir -p build/$(OUTPUT_DIR)
-	cd js; cat $(FILES) | babel-minify > ../build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).js
-	cat css/*.css > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).css
+	cat cinema/bandit/$(VERSION)/js/*.js | yarn run babel-minify > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).js
+	cat cinema/bandit/$(VERSION)/css/*.css > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).css
 
 build/cinemascience.github.io:
 	cd build; git clone https://github.com/cinemascience/cinemascience.github.io.git
