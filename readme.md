@@ -41,6 +41,23 @@ Install dependecies using yarn:
 
 After that, you should be able to run `make`.
 
+## Browser Notes
+
+### Firefox
+
+Firefox 68 and later will not load files from the hard-disk to prevent unauthorized access of your filesystem by webpages. To disable this security feature:
+
+1. Open `about:config`.
+2. Find `privacy.file_unique_origin` and set it to `false`.
+
+More information: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSRequestNotHttp#Local_File_Security_in_Firefox_68
+
+### Chrome
+
+Chrome will not load files from the hard-disk to prevent unauthorized access of your filesystem by webpages. To disable this security feature, run Chrome with the `--allow-file-access-from-files` command-line option.
+
+More information: https://www.codeproject.com/Questions/1195078/How-to-fix-cross-origin-requests-are-only-supporte
+
 ## Changelog
 ### Version 1.1
  * Significant performance improvements. Data is gradually streamed in while it loads/draws so more hangups

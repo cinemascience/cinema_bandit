@@ -10,10 +10,15 @@ all: minify
 	cp -rf examples build/
 	mkdir -p build/$(OUTPUT_DIR)
 	cp -rf cinema/bandit/$(VERSION)/css/images build/$(OUTPUT_DIR)/
+	cp -rf cinema/components build/cinema/
+	cp -rf cinema/lib build/cinema/
 
 minify:
 	mkdir -p build/$(OUTPUT_DIR)
-	cat cinema/bandit/$(VERSION)/js/*.js | yarn run babel-minify > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).js
+	# XXX: Minify
+	#cat cinema/bandit/$(VERSION)/js/*.js | yarn run babel-minify > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).js
+	# XXX: For debugging, don't minify:
+	cat cinema/bandit/$(VERSION)/js/*.js > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).js
 	cat cinema/bandit/$(VERSION)/css/*.css > build/$(OUTPUT_DIR)/$(OUTPUT_PREFIX).css
 
 build/cinemascience.github.io:
