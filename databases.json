@@ -95,12 +95,12 @@
 	},
 	{
 		"name": "Single image example",
-		"directory": "examples/blake_data.cdb",
+		"directory": "examples/sphere_multi-image.cdb",
 		"info": [
 			{
 				"name": "Circles",
 				"type": "image-single",
-				"data": "FILE_image_path"
+				"data": "FILE_Diffraction_Image_1"
 			}
 		]
 	}
