@@ -265,6 +265,7 @@ function doneLoading() {
 				var currentView = $('#mainViewSocket .viewContainer');
 				var socketContents = $(this).parent().children('.viewContainer');
 
+				mainCanvasWrapper = $('#mainCanvasWrapper');
 
 				//place current view back into its socket
 				var currentViewId = currentView.attr('id');
@@ -273,12 +274,16 @@ function doneLoading() {
 					currentView.insertBefore('#SocketOverlay'+displayId);
 					$('#SocketOverlay' + displayId).attr('mode','filled');
 					displays[displayId].updateSize();
+					//AQ
+					mainCanvasWrapper.attr('mode','side');
 				}
 				
 				//Place socket contents into main view
 				$('#mainViewSocket').append(socketContents);
 				$(this).attr('mode',"empty");
+				//AQ
 
+				mainCanvasWrapper.attr('mode','main');
 				var socketId = socketContents.attr('id');
 				socketId = socketId[socketId.length-1]
 				if (db.info[socketId].type == "line") {
