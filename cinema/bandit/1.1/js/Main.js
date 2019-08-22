@@ -290,6 +290,9 @@ function doneLoading() {
 					$('#resultsArea').animate({top: '5px'},callback=function() {
 					});*/
 				}
+				else if (db.info[socketId].type == "image-single"){
+					displays[socketId].updateSize();
+				}	
 			}
 		});
 
