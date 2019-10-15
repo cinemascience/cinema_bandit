@@ -162,6 +162,10 @@ body {
 	background-color: #6c89b7;
 	border-right: 15px solid #283f60;
 	box-shadow: 2px 0px 5px #222;
+
+	/* Makes it scrollable */
+	overflow-y:auto
+
 }
 .sidebarThird {
 	position: relative;
