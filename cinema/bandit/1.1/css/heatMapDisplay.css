@@ -1,0 +1,48 @@
+.heatMapDisplay {
+	overflow: auto;
+}
+
+.heatMapDisplay .canvasWrapper[mode="main"]{
+	position: absolute;
+	#top: 50%;
+	#transform: translateY(-50%);
+	#transform: translateX(50%);
+	right:10%;
+	box-sizing: border-box;
+	margin:auto;
+	width:90em;
+	height:100%;
+	padding-bottom: 50%;
+}
+.heatMapDisplay .canvasWrapper[mode="side"]{
+	position: absolute;
+	#top: 50%;
+	#transform: translateY(-50%);
+	#transform: translateX(50%);
+	right:10%;
+	box-sizing: border-box;
+	margin:auto;
+	width:90em;
+	height:100%;
+	padding-bottom: 50%;
+}
+.heatMapDisplayDisplay #rightCanvasWrapper {
+	right: 0px;
+}
+.heatMapDisplay #leftCanvasWrapper {
+	left: 0px;
+}
+.heatMapDisplay #mainCanvasWrapper {
+	left: 0px;
+}
+
+.heatMapDisplay .canvasWrapper canvas {
+	box-sizing: border-box;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+
+	border: 2px solid #ccc;
+}

@@ -1,5 +1,73 @@
 [
 	{
+		"name": "dDAC",
+		"directory": "examples/blake_data.cdb",
+		"info": [
+			{
+				"name": "Spectra",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_spectra_path",
+						"xcol":0,
+						"ycol":1,
+						"delimiter":" "
+					}
+				]
+			},
+			{
+				"name": "Diffraction Pattern",
+				"type": "image-single",
+				"data": "FILE_image_path"
+			},
+			{
+				"name": "Pressure vs. Time",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_pressure_path",
+						"xcol":1,
+						"ycol":2,
+						"delimiter":","
+					}
+				]
+			},
+			{
+				"name": "Volume vs. Time",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_volume_path",
+						"xcol":1,
+						"ycol":2,
+						"delimiter":","
+					}
+				]
+			},
+			{
+				"name": "Lattice Constant vs. Time",
+				"type": "line",
+				"data": 
+				[
+					{
+						"column": "FILE_lattice_path",
+						"xcol":1,
+						"ycol":2,
+						"delimiter":","
+					}
+				]
+			},
+			{
+				"name": "Heatmap",
+				"type": "heatmap",
+				"data": "FILE_heatmap_path"
+			}
+		]
+	},
+	{
 		"name": "Simple Database",
 		"directory": "examples/sphere_multi-image.cdb"
 	},

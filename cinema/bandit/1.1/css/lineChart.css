@@ -83,4 +83,5 @@ https://www.w3schools.com/howto/howto_css_loader.asp
 .lineChart .axis text {
 	fill: white;
 	text-shadow: 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+	font-size: 20px;
 }

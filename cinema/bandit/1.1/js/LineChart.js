@@ -18,7 +18,7 @@ function LineChart(parent, getData, config) {
 
 	//Sizing
 	this.parent = parent;
-	this.margin = {top: 30, right: 10, bottom: 20, left: 60};
+	this.margin = {top: 30, right: 10, bottom: 30, left: 60};
 	this.parentRect = parent.node().getBoundingClientRect();
 	this.internalWidth = this.parentRect.width - this.margin.left - this.margin.right;
 	this.internalHeight = this.parentRect.height - this.margin.top - this.margin.bottom;
@@ -732,7 +732,7 @@ LineChart.prototype.loadSingleData = function(index, callback) {
 					self.loadedData[id] = dsList;
 					if (self.selection.includes(id)) {
 						self.shownData = self.shownData.concat(dsList);
-						self.drawLines(self.shownCanvasContext,dsList,"blac");
+						self.drawLines(self.shownCanvasContext,dsList,"black");
 						if (self.mode != 'include')
 							self.drawLines(self.idCanvasContext,dsList,"id");
 					}

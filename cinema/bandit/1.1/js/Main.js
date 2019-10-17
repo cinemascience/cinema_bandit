@@ -11,6 +11,8 @@
  * ParallelCoordinatesChart.js
  * LineChart.js
  * TwoImageDisplay.js
+ * SingleImageDisplay.js
+ * HeatMapDisplay.js
  * 
  * Author: Dan Orban
  * Author: Cameron Tauxe
@@ -339,16 +341,23 @@ function doneLoading() {
 			$('#SocketOverlay'+f).attr('mode','filled');
 			displays.push(display);
 		}
-		else if (db.info[f].type == "image") {
+		else if (db.info[f].type === "image") {
 			var display = new TwoImageDisplay(d3.select('#Container'+f));
 			displays.push(display);
 			$('#SocketOverlay'+f).attr('mode','filled');
 		}
 		//AQ - Add ability to look at just a single image
-		else if (db.info[f].type == "image-single") {
+		else if (db.info[f].type === "image-single") {
 			var display = new SingleImageDisplay(d3.select('#Container'+f));
 			displays.push(display);
 			$('#SocketOverlay'+f).attr('mode','filled');
+		}
+		//AQ - Add ability to see 3d data in 2d using a heatmap
+		else if (db.info[f].type === "heatmap") {
+			var heatDisplay = new HeatMapDisplay(d3.select('#Container' + f), getHeatMapData);
+			heatDisplay.create(heatDisplay.heatMapWrapper);
+			displays.push(heatDisplay);
+			$('SocketOverlay' + f).attr('mode','filled');
 		}
 	}
 }
@@ -546,6 +555,19 @@ function getImage(i, config) {
 		return data;
 	}
 }
+
+//Get filename for the heatmap
+//Function is passed in to the object when the HeatMap object is created.
+function getHeatMapData(i, config) {
+	if (chartLoaded) {
+		var result = chart.results[i];
+		var itemInfo = config;
+		var data = [];
+		data.push("/" + db.directory + "/" + result[itemInfo]);
+		return data;
+	}
+}
+
 
 //Update the info pane according to the index of the data
 //being moused over
