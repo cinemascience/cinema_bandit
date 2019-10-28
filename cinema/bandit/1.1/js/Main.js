@@ -299,7 +299,10 @@ function doneLoading() {
 				}
 				else if (db.info[socketId].type == "image-single"){
 					displays[socketId].updateSize();
-				}	
+				}
+				else if (db.info[socketId].type == "heatmap"){
+					displays[socketId].updateSize();
+				}
 			}
 		});
 
@@ -355,9 +358,9 @@ function doneLoading() {
 		//AQ - Add ability to see 3d data in 2d using a heatmap
 		else if (db.info[f].type === "heatmap") {
 			var heatDisplay = new HeatMapDisplay(d3.select('#Container' + f), getHeatMapData);
-			heatDisplay.create(heatDisplay.heatMapWrapper);
+			heatDisplay.create();
 			displays.push(heatDisplay);
-			$('SocketOverlay' + f).attr('mode','filled');
+			$('#SocketOverlay' + f).attr('mode','filled');
 		}
 	}
 }
