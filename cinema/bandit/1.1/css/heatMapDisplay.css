@@ -1,5 +1,6 @@
 .heatMapDisplay {
 	overflow: auto;
+	background-color: white;
 }
 
 .heatMapDisplay .canvasWrapper[mode="main"]{

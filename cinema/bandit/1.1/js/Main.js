@@ -358,7 +358,6 @@ function doneLoading() {
 		//AQ - Add ability to see 3d data in 2d using a heatmap
 		else if (db.info[f].type === "heatmap") {
 			var heatDisplay = new HeatMapDisplay(d3.select('#Container' + f), getHeatMapData);
-			heatDisplay.create();
 			displays.push(heatDisplay);
 			$('#SocketOverlay' + f).attr('mode','filled');
 		}

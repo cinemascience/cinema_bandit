@@ -60,6 +60,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	<script src="https://d3js.org/d3.v4.js"></script>
 	<script src="cinema/lib/jquery-3.3.1.min.js"></script>
 	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <!-- components -->
 	<link rel='stylesheet' href='cinema/components/2.5/CinemaComponents.v2.5.min.css'>
@@ -70,6 +71,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	<link rel='stylesheet' href='cinema/bandit/1.1/css/twoImageDisplay.css'>
 	<link rel='stylesheet' href='cinema/bandit/1.1/css/oneImageDisplay.css'>
 	<link rel='stylesheet' href='cinema/bandit/1.1/css/bandit.css'>
+	<link rel='stylesheet' href='cinema/bandit/1.1/css/heatMapDisplay.css'>
 	<script src='cinema/bandit/1.1/js/LineChart.js'></script>
 	<script src='cinema/bandit/1.1/js/TwoImageDisplay.js'></script>
 	<script src='cinema/bandit/1.1/js/SingleImageDisplay.js'></script>
@@ -130,8 +132,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 			</div>
 			<div id = "mainViewSocket" class="socket">
 				<!--Views from the sidebar will be placed in here-->
+				<div width=100% height=100% id="my_dataviz"></div>
 			</div>
 		</div>
 	</div>
+	<script src="scripts/heatmap.js"></script>
 	<script>startBandit();</script>
 </body>
