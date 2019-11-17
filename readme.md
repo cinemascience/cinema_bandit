@@ -1,6 +1,8 @@
 # BANDIT
 ## Version 1.1
 
+<img src="img/bandit.png" width="800" border="1"></img>
+
 A multi-view application for analysis and visualization of experimental data
 
 ### See databases.json for a template on adding new data
