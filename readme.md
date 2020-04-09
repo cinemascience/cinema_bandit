@@ -37,6 +37,19 @@ There are two types of files that can be loaded in Bandit, time series data (.cs
 ## Issues
 * On Safari, the browser may reach a limit for files opened (Safari does not release files from file:// requests until the page is closed) and refuse to load more data when loading particularly large data sets.
 
+## A Note on Browser Security
+To use Cinema:Bandit, you must allow local file access. Do this in the following way, but be sure to reset these options when you are done:
+
+- **Firefox** 
+    - in ```about:config```, set ```privacy.file_unique_origin``` to **false**
+- **Firefox (preferred)**
+    - type ```about:config``` in the navigaion bar
+        - set ```privacy.file_unique_origin``` to **false**
+        - set ```security.fileuri.strict_origin_policy``` to **false**
+- **Safari** 
+    - Safari->Preferences->Advanced->Show Develop menu in menu bar
+    - Safari->Develop->Disable Local File Restrictions (on)
+
 ## Changelog
 ### Version 1.1
  * Significant performance improvements. Data is gradually streamed in while it loads/draws so more hangups
